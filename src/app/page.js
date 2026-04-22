@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { ShoppingCart, MessageCircle, Package, User, LogOut, Settings, Plus, Search, RefreshCw } from 'lucide-react'
 
 export default function Home() {
   const [productos, setProductos] = useState([])
@@ -71,47 +72,57 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0f0f0f] text-white">
+    <main className="min-h-screen" style={{ backgroundColor: '#f5f7fa' }}>
 
       {/* NAVBAR */}
-      <nav className="bg-[#1a1a1a] border-b border-[#2a2a2a] px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        <h1 className="text-xl font-bold text-blue-400">🏫 Marketplace Escolar</h1>
-        <div className="flex items-center gap-4">
+      <nav style={{ backgroundColor: '#1a3a6b' }} className="px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-lg">
+        <Link href="/">
+          <img src="/logo.png" alt="Marketplace Escolar" className="h-14 w-auto" />
+        </Link>
+        <div className="flex items-center gap-3">
           {usuario ? (
             <>
               {esAdmin && (
-                <Link href="/admin" className="text-yellow-400 hover:text-yellow-300 text-sm font-medium transition">
-                  ⚙️ Admin
+                <Link href="/admin" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition" style={{ backgroundColor: '#c9a84c', color: '#0f2548' }}>
+                  <Settings size={16} />
+                  Admin
                 </Link>
               )}
-              <Link href="/productos/nuevo" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                + Publicar
+              <Link href="/productos/nuevo" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition" style={{ backgroundColor: '#c9a84c', color: '#0f2548' }}>
+                <Plus size={16} />
+                Publicar
               </Link>
-              <Link href="/carrito" className="text-gray-300 hover:text-white text-sm transition">
-                🛒 Carrito
+              <Link href="/carrito" className="flex items-center gap-1.5 text-white hover:opacity-80 text-sm transition px-2 py-2 rounded-lg">
+                <ShoppingCart size={18} />
+                <span className="hidden md:inline">Carrito</span>
               </Link>
-              <Link href="/mensajes" className="text-gray-300 hover:text-white text-sm transition">
-                💬 Mensajes
+              <Link href="/mensajes" className="flex items-center gap-1.5 text-white hover:opacity-80 text-sm transition px-2 py-2 rounded-lg">
+                <MessageCircle size={18} />
+                <span className="hidden md:inline">Mensajes</span>
               </Link>
-              <Link href="/trueque" className="text-gray-300 hover:text-white text-sm transition">
-                🔄 Trueques
+              <Link href="/trueque" className="flex items-center gap-1.5 text-white hover:opacity-80 text-sm transition px-2 py-2 rounded-lg">
+                <RefreshCw size={18} />
+                <span className="hidden md:inline">Trueques</span>
               </Link>
-              <Link href="/pedidos" className="text-gray-300 hover:text-white text-sm transition">
-                📦 Mis Pedidos
+              <Link href="/pedidos" className="flex items-center gap-1.5 text-white hover:opacity-80 text-sm transition px-2 py-2 rounded-lg">
+                <Package size={18} />
+                <span className="hidden md:inline">Pedidos</span>
               </Link>
-              <Link href="/perfil" className="text-gray-300 hover:text-white text-sm transition">
-                Mi Perfil
+              <Link href="/perfil" className="flex items-center gap-1.5 text-white hover:opacity-80 text-sm transition px-2 py-2 rounded-lg">
+                <User size={18} />
+                <span className="hidden md:inline">Perfil</span>
               </Link>
-              <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 text-sm transition">
-                Salir
+              <button onClick={handleLogout} className="flex items-center gap-1.5 text-white hover:opacity-80 text-sm transition px-2 py-2 rounded-lg">
+                <LogOut size={18} />
+                <span className="hidden md:inline">Salir</span>
               </button>
             </>
           ) : (
             <>
-              <Link href="/auth/login" className="text-gray-300 hover:text-white text-sm transition">
+              <Link href="/auth/login" className="text-white hover:opacity-80 text-sm transition px-3 py-2 rounded-lg font-medium">
                 Iniciar Sesión
               </Link>
-              <Link href="/auth/registro" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+              <Link href="/auth/registro" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition" style={{ backgroundColor: '#c9a84c', color: '#0f2548' }}>
                 Registrarse
               </Link>
             </>
@@ -120,37 +131,39 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section className="px-6 py-20 text-center bg-gradient-to-b from-[#1a1a2e] to-[#0f0f0f]">
-        <h2 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+      <section className="px-6 py-16 text-center" style={{ background: 'linear-gradient(135deg, #1a3a6b 0%, #0f2548 100%)' }}>
+        <h2 className="text-4xl font-extrabold mb-4" style={{ color: '#c9a84c' }}>
           Comprá y vendé en tu colegio
         </h2>
-        <p className="text-gray-400 text-lg max-w-xl mx-auto mb-8">
-          El marketplace de Cedes Don Bosco. Encontrá útiles, libros, uniformes y más.
+        <p className="text-lg max-w-xl mx-auto mb-8" style={{ color: '#e8eef7' }}>
+          El marketplace oficial de Cedes Don Bosco. Encontrá útiles, libros, uniformes y más.
         </p>
         {!usuario && (
-          <Link href="/auth/registro" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold text-lg transition">
+          <Link href="/auth/registro" className="inline-block px-8 py-3 rounded-xl font-bold text-lg transition shadow-lg" style={{ backgroundColor: '#c9a84c', color: '#0f2548' }}>
             Empezar ahora
           </Link>
         )}
       </section>
 
       {/* BÚSQUEDA Y FILTROS */}
-      <section className="px-6 py-8 max-w-7xl mx-auto">
+      <section className="px-6 py-6 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#64748b' }} />
             <input
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar productos..."
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl pl-11 pr-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl pl-11 pr-4 py-3 text-sm border focus:outline-none focus:ring-2"
+              style={{ backgroundColor: 'white', borderColor: '#e2e8f0', color: '#1e293b', focusRingColor: '#1a3a6b' }}
             />
           </div>
           <select
             value={categoriaSeleccionada}
             onChange={(e) => setCategoriaSeleccionada(e.target.value)}
-            className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-3 text-white focus:border-blue-500 focus:outline-none sm:w-56"
+            className="rounded-xl px-4 py-3 text-sm border focus:outline-none sm:w-56"
+            style={{ backgroundColor: 'white', borderColor: '#e2e8f0', color: '#1e293b' }}
           >
             <option value="">Todas las categorías</option>
             {categorias.map((cat) => (
@@ -162,7 +175,8 @@ export default function Home() {
           {(busqueda || categoriaSeleccionada) && (
             <button
               onClick={() => { setBusqueda(''); setCategoriaSeleccionada('') }}
-              className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-gray-300 px-4 py-3 rounded-xl transition text-sm"
+              className="px-4 py-3 rounded-xl text-sm font-medium transition border"
+              style={{ backgroundColor: 'white', borderColor: '#e2e8f0', color: '#64748b' }}
             >
               Limpiar
             </button>
@@ -172,21 +186,20 @@ export default function Home() {
 
       {/* PRODUCTOS */}
       <section className="px-6 pb-12 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold text-gray-100">
-            {busqueda || categoriaSeleccionada ? `${productosFiltrados.length} resultado${productosFiltrados.length !== 1 ? 's' : ''}` : 'Productos publicados'}
-          </h3>
-        </div>
+        <h3 className="text-xl font-bold mb-6" style={{ color: '#1a3a6b' }}>
+          {busqueda || categoriaSeleccionada ? `${productosFiltrados.length} resultado${productosFiltrados.length !== 1 ? 's' : ''}` : 'Productos publicados'}
+        </h3>
 
         {loading ? (
-          <p className="text-gray-400">Cargando productos...</p>
+          <p style={{ color: '#64748b' }}>Cargando productos...</p>
         ) : productosFiltrados.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-5xl mb-4">🔍</p>
-            <p className="text-gray-500 text-lg">No se encontraron productos</p>
+            <Search size={48} className="mx-auto mb-4" style={{ color: '#64748b' }} />
+            <p className="text-lg" style={{ color: '#64748b' }}>No se encontraron productos</p>
             <button
               onClick={() => { setBusqueda(''); setCategoriaSeleccionada('') }}
-              className="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
+              className="mt-4 inline-block px-6 py-2 rounded-lg text-sm font-semibold transition"
+              style={{ backgroundColor: '#1a3a6b', color: 'white' }}
             >
               Ver todos
             </button>
@@ -195,19 +208,19 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {productosFiltrados.map((producto) => (
               <Link href={`/productos/${producto.id_producto}`} key={producto.id_producto}>
-                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-blue-500 transition cursor-pointer group">
-                  <div className="h-48 bg-[#2a2a2a] flex items-center justify-center overflow-hidden">
+                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer border" style={{ borderColor: '#e2e8f0' }}>
+                  <div className="h-48 flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#f5f7fa' }}>
                     {producto.imagen ? (
-                      <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                      <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover hover:scale-105 transition" />
                     ) : (
-                      <span className="text-5xl">📦</span>
+                      <Package size={48} style={{ color: '#64748b' }} />
                     )}
                   </div>
                   <div className="p-4">
-                    <span className="text-xs text-blue-400 font-medium">{producto.categoria?.nombre}</span>
-                    <h4 className="font-semibold text-white mt-1 truncate">{producto.nombre}</h4>
-                    <p className="text-gray-400 text-sm mt-1 line-clamp-2">{producto.descripcion}</p>
-                    <p className="text-blue-400 font-bold text-lg mt-3">₡{Number(producto.precio).toLocaleString()}</p>
+                    <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ backgroundColor: '#e8eef7', color: '#1a3a6b' }}>{producto.categoria?.nombre}</span>
+                    <h4 className="font-bold mt-2 truncate" style={{ color: '#1e293b' }}>{producto.nombre}</h4>
+                    <p className="text-sm mt-1 line-clamp-2" style={{ color: '#64748b' }}>{producto.descripcion}</p>
+                    <p className="font-extrabold text-lg mt-3" style={{ color: '#c9a84c' }}>₡{Number(producto.precio).toLocaleString()}</p>
                   </div>
                 </div>
               </Link>

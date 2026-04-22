@@ -1,7 +1,7 @@
-import { Inter } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const nunito = Nunito({ subsets: ['latin'], weights: ['400', '500', '600', '700', '800'] })
 
 export const metadata = {
   title: 'Marketplace Escolar - Cedes Don Bosco',
@@ -10,8 +10,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${inter.className} bg-[#0f0f0f] text-white`}>
+    <html lang="es">
+      <body className={nunito.className} style={{ backgroundColor: '#f5f7fa', color: '#1e293b' }}>
         {children}
       </body>
     </html>
