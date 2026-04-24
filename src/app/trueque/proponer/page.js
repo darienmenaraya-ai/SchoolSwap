@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { ArrowLeft, RefreshCw, Package } from 'lucide-react'
 
 function ProponerTruequeContenido() {
   const router = useRouter()
@@ -19,34 +20,16 @@ function ProponerTruequeContenido() {
   useEffect(() => {
     async function cargarDatos() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
+      if (!user) { router.push('/auth/login'); return }
       setUsuario(user)
-
       const productoId = searchParams.get('producto')
       const vendedorId = searchParams.get('vendedor')
-
-      if (!productoId || !vendedorId) {
-        router.push('/')
-        return
-      }
-
-      const { data: prod } = await supabase
-        .from('producto')
-        .select('*, categoria(nombre), usuario(nombre, apellido)')
-        .eq('id_producto', productoId)
-        .single()
-
+      if (!productoId || !vendedorId) { router.push('/'); return }
+      const { data: prod } = await supabase.from('producto')
+        .select('*, categoria(nombre), usuario(nombre, apellido)').eq('id_producto', productoId).single()
       setProductoSolicitado(prod)
-
-      const { data: misProd } = await supabase
-        .from('producto')
-        .select('*')
-        .eq('id_usuario', user.id)
-        .eq('estado', 'publicado')
-
+      const { data: misProd } = await supabase.from('producto')
+        .select('*').eq('id_usuario', user.id).eq('estado', 'publicado')
       setMisProductos(misProd || [])
       setLoading(false)
     }
@@ -55,119 +38,87 @@ function ProponerTruequeContenido() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!productoOfrecido) {
-      setError('Seleccioná un producto para ofrecer')
-      return
-    }
-
+    if (!productoOfrecido) { setError('Seleccioná un producto para ofrecer'); return }
     setEnviando(true)
     setError('')
-
     const vendedorId = searchParams.get('vendedor')
-
     const { error: dbError } = await supabase.from('trueque').insert({
-      id_producto_ofrecido: productoOfrecido,
-      id_producto_solicitado: productoSolicitado.id_producto,
-      id_usuario_oferta: usuario.id,
-      id_usuario_receptor: vendedorId,
-      estado: 'pendiente',
+      id_producto_ofrecido: productoOfrecido, id_producto_solicitado: productoSolicitado.id_producto,
+      id_usuario_oferta: usuario.id, id_usuario_receptor: vendedorId, estado: 'pendiente',
     })
-
-    if (dbError) {
-      setError(dbError.message)
-      setEnviando(false)
-      return
-    }
-
+    if (dbError) { setError(dbError.message); setEnviando(false); return }
     router.push('/trueque')
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <p className="text-gray-400">Cargando...</p>
-      </div>
-    )
-  }
+  if (loading) return <div className="flex items-center justify-center h-96"><p style={{ color: '#6b7280' }}>Cargando...</p></div>
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold mb-2">🔄 Proponer Trueque</h1>
-      <p className="text-gray-400 mb-8">Seleccioná uno de tus productos para intercambiar</p>
+      <h1 className="text-2xl font-extrabold mb-2 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
+        <RefreshCw size={28} /> Proponer Trueque
+      </h1>
+      <p className="mb-8" style={{ color: '#6b7280' }}>Seleccioná uno de tus productos para intercambiar</p>
 
       {error && (
-        <div className="bg-red-900/50 border border-red-500 text-red-300 p-3 rounded-lg mb-6 text-sm">
-          {error}
-        </div>
+        <div className="p-3 rounded-lg mb-6 text-sm border" style={{ backgroundColor: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}>{error}</div>
       )}
 
-      {/* PRODUCTO SOLICITADO */}
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-300 mb-4">Querés obtener</h2>
+      <div className="bg-white border rounded-xl p-6 mb-8 shadow-sm" style={{ borderColor: '#e2e6ff' }}>
+        <h2 className="text-sm font-bold mb-4" style={{ color: '#1a1f6e' }}>Querés obtener</h2>
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 bg-[#2a2a2a] rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+          <div className="w-20 h-20 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#e8eaff' }}>
             {productoSolicitado?.imagen ? (
               <img src={productoSolicitado.imagen} alt={productoSolicitado.nombre} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-3xl">📦</span>
-            )}
+            ) : <Package size={32} style={{ color: '#3b4fd8' }} />}
           </div>
           <div>
-            <p className="text-white font-semibold text-lg">{productoSolicitado?.nombre}</p>
-            <p className="text-blue-400 font-bold">₡{Number(productoSolicitado?.precio).toLocaleString()}</p>
-            <p className="text-gray-400 text-sm">De: {productoSolicitado?.usuario?.nombre} {productoSolicitado?.usuario?.apellido}</p>
+            <p className="font-bold text-lg" style={{ color: '#1a1f6e' }}>{productoSolicitado?.nombre}</p>
+            <p className="font-bold" style={{ color: '#3b4fd8' }}>₡{Number(productoSolicitado?.precio).toLocaleString()}</p>
+            <p className="text-sm" style={{ color: '#6b7280' }}>De: {productoSolicitado?.usuario?.nombre} {productoSolicitado?.usuario?.apellido}</p>
           </div>
         </div>
       </div>
 
-      {/* MIS PRODUCTOS */}
       <form onSubmit={handleSubmit}>
-        <h2 className="text-lg font-semibold text-gray-300 mb-4">Ofrecés a cambio</h2>
-
+        <h2 className="text-sm font-bold mb-4" style={{ color: '#1a1f6e' }}>Ofrecés a cambio</h2>
         {misProductos.length === 0 ? (
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8 text-center mb-6">
-            <p className="text-gray-500 mb-4">No tenés productos publicados para ofrecer</p>
-            <Link href="/productos/nuevo" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition text-sm">
+          <div className="bg-white border rounded-xl p-8 text-center mb-6 shadow-sm" style={{ borderColor: '#e2e6ff' }}>
+            <p className="mb-4" style={{ color: '#6b7280' }}>No tenés productos publicados para ofrecer</p>
+            <Link href="/productos/nuevo" className="px-6 py-2 rounded-lg text-sm font-bold" style={{ backgroundColor: '#1a1f6e', color: 'white' }}>
               Publicar un producto
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             {misProductos.map((prod) => (
-              <div
-                key={prod.id_producto}
-                onClick={() => setProductoOfrecido(prod.id_producto)}
-                className={`bg-[#1a1a1a] border-2 rounded-xl p-4 cursor-pointer transition ${productoOfrecido === prod.id_producto ? 'border-yellow-500' : 'border-[#2a2a2a] hover:border-[#3a3a3a]'}`}
-              >
+              <div key={prod.id_producto} onClick={() => setProductoOfrecido(prod.id_producto)}
+                className="bg-white border-2 rounded-xl p-4 cursor-pointer transition shadow-sm"
+                style={{ borderColor: productoOfrecido === prod.id_producto ? '#1a1f6e' : '#e2e6ff' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 bg-[#2a2a2a] rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#e8eaff' }}>
                     {prod.imagen ? (
                       <img src={prod.imagen} alt={prod.nombre} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-2xl">📦</span>
-                    )}
+                    ) : <Package size={24} style={{ color: '#3b4fd8' }} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium truncate">{prod.nombre}</p>
-                    <p className="text-blue-400 text-sm">₡{Number(prod.precio).toLocaleString()}</p>
-                    <p className="text-gray-500 text-xs">Stock: {prod.stock}</p>
+                    <p className="font-bold truncate" style={{ color: '#1a1f6e' }}>{prod.nombre}</p>
+                    <p className="text-sm font-bold" style={{ color: '#3b4fd8' }}>₡{Number(prod.precio).toLocaleString()}</p>
+                    <p className="text-xs" style={{ color: '#6b7280' }}>Stock: {prod.stock}</p>
                   </div>
                   {productoOfrecido === prod.id_producto && (
-                    <span className="text-yellow-400 text-xl">✓</span>
+                    <span className="text-lg font-bold" style={{ color: '#1a1f6e' }}>✓</span>
                   )}
                 </div>
               </div>
             ))}
           </div>
         )}
-
         {misProductos.length > 0 && (
-          <button
-            type="submit"
-            disabled={enviando || !productoOfrecido}
-            className="w-full bg-yellow-700 hover:bg-yellow-600 disabled:bg-gray-700 disabled:text-gray-500 text-white py-3 rounded-xl font-semibold text-lg transition"
-          >
-            {enviando ? 'Enviando propuesta...' : '🔄 Enviar propuesta de trueque'}
+          <button type="submit" disabled={enviando || !productoOfrecido}
+            className="w-full py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2"
+            style={{ backgroundColor: productoOfrecido ? '#1a1f6e' : '#e2e6ff', color: productoOfrecido ? 'white' : '#94a3b8' }}>
+            <RefreshCw size={18} />
+            {enviando ? 'Enviando propuesta...' : 'Enviar propuesta de trueque'}
           </button>
         )}
       </form>
@@ -177,12 +128,12 @@ function ProponerTruequeContenido() {
 
 export default function ProponerTrueque() {
   return (
-    <main className="min-h-screen bg-[#0f0f0f] text-white">
-      <nav className="bg-[#1a1a1a] border-b border-[#2a2a2a] px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-blue-400"> Marketplace Cedes Don Bosco</Link>
-        <Link href="/" className="text-gray-400 hover:text-white text-sm transition">← Volver</Link>
+    <main className="min-h-screen" style={{ backgroundColor: '#f5f7ff' }}>
+      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a1f6e' }}>
+        <Link href="/"><img src="/logo.png" alt="SchoolSwap" className="h-12 w-auto" /></Link>
+        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white"><ArrowLeft size={16} /> Volver</Link>
       </nav>
-      <Suspense fallback={<div className="flex items-center justify-center h-96"><p className="text-gray-400">Cargando...</p></div>}>
+      <Suspense fallback={<div className="flex items-center justify-center h-96"><p style={{ color: '#6b7280' }}>Cargando...</p></div>}>
         <ProponerTruequeContenido />
       </Suspense>
     </main>

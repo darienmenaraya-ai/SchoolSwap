@@ -46,86 +46,75 @@ export default function Perfil() {
     setProductos(productos.filter(p => p.id_producto !== id_producto))
   }
 
-  if (loading) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f7fa' }}><p style={{ color: '#64748b' }}>Cargando perfil...</p></main>
+  if (loading) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f7ff' }}><p style={{ color: '#6b7280' }}>Cargando...</p></main>
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: '#f5f7fa' }}>
-      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a3a6b' }}>
-        <Link href="/" className="text-2xl font-extrabold" style={{ color: '#c9a84c' }}>Market-cedes</Link>
-        <Link href="/" className="flex items-center gap-2 text-sm font-medium" style={{ color: 'white' }}>
-          <ArrowLeft size={16} /> Volver
-        </Link>
+    <main className="min-h-screen" style={{ backgroundColor: '#f5f7ff' }}>
+      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a1f6e' }}>
+        <Link href="/"><img src="/logo.png" alt="SchoolSwap" className="h-12 w-auto" /></Link>
+        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white"><ArrowLeft size={16} /> Volver</Link>
       </nav>
-
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-2xl font-extrabold mb-8 flex items-center gap-3" style={{ color: '#1a3a6b' }}>
+        <h1 className="text-2xl font-extrabold mb-8 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
           <User size={28} /> Mi Perfil
         </h1>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white border rounded-xl p-6 shadow-sm" style={{ borderColor: '#e2e8f0' }}>
-            <h2 className="text-lg font-bold mb-6" style={{ color: '#1a3a6b' }}>Datos personales</h2>
+          <div className="bg-white border rounded-xl p-6 shadow-sm" style={{ borderColor: '#e2e6ff' }}>
+            <h2 className="text-lg font-bold mb-6" style={{ color: '#1a1f6e' }}>Datos personales</h2>
             {mensaje && (
-              <div className="p-3 rounded-lg mb-4 text-sm border" style={{ backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#16a34a' }}>
-                {mensaje}
-              </div>
+              <div className="p-3 rounded-lg mb-4 text-sm border" style={{ backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }}>{mensaje}</div>
             )}
             <form onSubmit={handleGuardar} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1a3a6b' }}>Nombre</label>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#1a1f6e' }}>Nombre</label>
                 <input type="text" name="nombre" value={form.nombre} onChange={handleChange}
-                  className="w-full rounded-lg p-3 text-sm border focus:outline-none" style={{ borderColor: '#e2e8f0', color: '#1e293b' }} />
+                  className="w-full rounded-lg p-3 text-sm border focus:outline-none" style={{ borderColor: '#e2e6ff', color: '#1a1f6e' }} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1a3a6b' }}>Apellido</label>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#1a1f6e' }}>Apellido</label>
                 <input type="text" name="apellido" value={form.apellido} onChange={handleChange}
-                  className="w-full rounded-lg p-3 text-sm border focus:outline-none" style={{ borderColor: '#e2e8f0', color: '#1e293b' }} />
+                  className="w-full rounded-lg p-3 text-sm border focus:outline-none" style={{ borderColor: '#e2e6ff', color: '#1a1f6e' }} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1a3a6b' }}>Correo</label>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#1a1f6e' }}>Correo</label>
                 <input type="email" value={form.correo} disabled
-                  className="w-full rounded-lg p-3 text-sm border" style={{ borderColor: '#e2e8f0', color: '#94a3b8', backgroundColor: '#f8fafc' }} />
+                  className="w-full rounded-lg p-3 text-sm border" style={{ borderColor: '#e2e6ff', color: '#94a3b8', backgroundColor: '#f8fafc' }} />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1a3a6b' }}>Rol</label>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#1a1f6e' }}>Rol</label>
                 <input type="text" value={perfil?.rol} disabled className="w-full rounded-lg p-3 text-sm border capitalize"
-                  style={{ borderColor: '#e2e8f0', color: '#94a3b8', backgroundColor: '#f8fafc' }} />
+                  style={{ borderColor: '#e2e6ff', color: '#94a3b8', backgroundColor: '#f8fafc' }} />
               </div>
               <button type="submit" disabled={guardando}
                 className="w-full py-2.5 rounded-lg font-bold text-sm transition"
-                style={{ backgroundColor: '#1a3a6b', color: 'white' }}>
+                style={{ backgroundColor: '#1a1f6e', color: 'white' }}>
                 {guardando ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </form>
           </div>
-
-          <div className="bg-white border rounded-xl p-6 shadow-sm" style={{ borderColor: '#e2e8f0' }}>
+          <div className="bg-white border rounded-xl p-6 shadow-sm" style={{ borderColor: '#e2e6ff' }}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold" style={{ color: '#1a3a6b' }}>Mis productos</h2>
-              <Link href="/productos/nuevo" className="flex items-center gap-1 text-sm font-bold" style={{ color: '#c9a84c' }}>
+              <h2 className="text-lg font-bold" style={{ color: '#1a1f6e' }}>Mis productos</h2>
+              <Link href="/productos/nuevo" className="flex items-center gap-1 text-sm font-bold" style={{ color: '#3b4fd8' }}>
                 <Plus size={16} /> Publicar
               </Link>
             </div>
             {productos.length === 0 ? (
-              <p className="text-sm text-center py-8" style={{ color: '#64748b' }}>No tenés productos publicados</p>
+              <p className="text-sm text-center py-8" style={{ color: '#6b7280' }}>No tenés productos publicados</p>
             ) : (
               <div className="space-y-3">
                 {productos.map((producto) => (
-                  <div key={producto.id_producto} className="flex items-center gap-3 rounded-lg p-3 border" style={{ borderColor: '#e2e8f0' }}>
-                    <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: '#f5f7fa' }}>
+                  <div key={producto.id_producto} className="flex items-center gap-3 rounded-lg p-3 border" style={{ borderColor: '#e2e6ff' }}>
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: '#f5f7ff' }}>
                       {producto.imagen ? (
                         <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" />
-                      ) : (
-                        <Package size={20} style={{ color: '#64748b' }} />
-                      )}
+                      ) : <Package size={20} style={{ color: '#6b7280' }} />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: '#1e293b' }}>{producto.nombre}</p>
-                      <p className="text-xs font-bold" style={{ color: '#c9a84c' }}>₡{Number(producto.precio).toLocaleString()}</p>
+                      <p className="text-sm font-semibold truncate" style={{ color: '#1a1f6e' }}>{producto.nombre}</p>
+                      <p className="text-xs font-bold" style={{ color: '#3b4fd8' }}>₡{Number(producto.precio).toLocaleString()}</p>
                     </div>
-                    <button onClick={() => eliminarProducto(producto.id_producto)} style={{ color: '#94a3b8' }}>
-                      <Trash2 size={16} />
-                    </button>
+                    <button onClick={() => eliminarProducto(producto.id_producto)} style={{ color: '#94a3b8' }}><Trash2 size={16} /></button>
                   </div>
                 ))}
               </div>
@@ -135,4 +124,4 @@ export default function Perfil() {
       </div>
     </main>
   )
-} 
+}

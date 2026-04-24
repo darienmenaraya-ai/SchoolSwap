@@ -48,70 +48,61 @@ export default function DetalleProducto() {
     setAgregando(false)
   }
 
-  if (loading) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f7fa' }}><p style={{ color: '#64748b' }}>Cargando producto...</p></main>
-  if (!producto) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f7fa' }}><p style={{ color: '#64748b' }}>Producto no encontrado.</p></main>
+  if (loading) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f7ff' }}><p style={{ color: '#6b7280' }}>Cargando...</p></main>
+  if (!producto) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f7ff' }}><p style={{ color: '#6b7280' }}>Producto no encontrado.</p></main>
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: '#f5f7fa' }}>
-      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a3a6b' }}>
-        <Link href="/" className="text-2xl font-extrabold" style={{ color: '#c9a84c' }}>Market-cedes</Link>
-        <Link href="/" className="flex items-center gap-2 text-sm font-medium" style={{ color: 'white' }}>
-          <ArrowLeft size={16} /> Volver
-        </Link>
+    <main className="min-h-screen" style={{ backgroundColor: '#f5f7ff' }}>
+      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a1f6e' }}>
+        <Link href="/"><img src="/logo.png" alt="SchoolSwap" className="h-12 w-auto" /></Link>
+        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white"><ArrowLeft size={16} /> Volver</Link>
       </nav>
-
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="bg-white rounded-2xl overflow-hidden h-96 flex items-center justify-center border shadow-sm" style={{ borderColor: '#e2e8f0' }}>
+          <div className="bg-white rounded-2xl overflow-hidden h-96 flex items-center justify-center border shadow-sm" style={{ borderColor: '#e2e6ff' }}>
             {producto.imagen ? (
               <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" />
             ) : (
-              <Package size={80} style={{ color: '#64748b' }} />
+              <Package size={80} style={{ color: '#6b7280' }} />
             )}
           </div>
-
           <div className="flex flex-col justify-between">
             <div>
-              <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#e8eef7', color: '#1a3a6b' }}>{producto.categoria?.nombre}</span>
-              <h1 className="text-3xl font-extrabold mt-3" style={{ color: '#1e293b' }}>{producto.nombre}</h1>
-              <p className="mt-4 leading-relaxed" style={{ color: '#64748b' }}>{producto.descripcion}</p>
+              <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#e8eaff', color: '#3b4fd8' }}>{producto.categoria?.nombre}</span>
+              <h1 className="text-3xl font-extrabold mt-3" style={{ color: '#1a1f6e' }}>{producto.nombre}</h1>
+              <p className="mt-4 leading-relaxed" style={{ color: '#6b7280' }}>{producto.descripcion}</p>
               <div className="mt-6 space-y-2">
-                <p className="text-4xl font-extrabold" style={{ color: '#c9a84c' }}>₡{Number(producto.precio).toLocaleString()}</p>
-                <p className="text-sm" style={{ color: '#64748b' }}>Stock disponible: {producto.stock} unidades</p>
-                <p className="text-sm" style={{ color: '#64748b' }}>Vendido por: {producto.usuario?.nombre} {producto.usuario?.apellido}</p>
+                <p className="text-4xl font-extrabold" style={{ color: '#3b4fd8' }}>₡{Number(producto.precio).toLocaleString()}</p>
+                <p className="text-sm" style={{ color: '#6b7280' }}>Stock disponible: {producto.stock} unidades</p>
+                <p className="text-sm" style={{ color: '#6b7280' }}>Vendido por: {producto.usuario?.nombre} {producto.usuario?.apellido}</p>
               </div>
             </div>
-
             <div className="mt-8 space-y-3">
               {mensaje && (
-                <div className="p-3 rounded-lg text-sm border" style={{ backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#16a34a' }}>
-                  {mensaje}
-                </div>
+                <div className="p-3 rounded-lg text-sm border" style={{ backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }}>{mensaje}</div>
               )}
               {usuario?.id !== producto.id_usuario && (
                 <div className="space-y-3">
                   <button onClick={agregarAlCarrito} disabled={agregando || producto.stock === 0}
                     className="w-full py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2"
-                    style={{ backgroundColor: producto.stock === 0 ? '#e2e8f0' : '#1a3a6b', color: producto.stock === 0 ? '#94a3b8' : 'white' }}>
+                    style={{ backgroundColor: producto.stock === 0 ? '#e2e6ff' : '#1a1f6e', color: producto.stock === 0 ? '#94a3b8' : 'white' }}>
                     <ShoppingCart size={18} />
                     {agregando ? 'Agregando...' : producto.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
                   </button>
                   <Link href={`/mensajes?usuario=${producto.id_usuario}`}
                     className="w-full py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 border"
-                    style={{ borderColor: '#1a3a6b', color: '#1a3a6b', backgroundColor: 'white' }}>
-                    <MessageCircle size={18} />
-                    Contactar vendedor
+                    style={{ borderColor: '#1a1f6e', color: '#1a1f6e', backgroundColor: 'white' }}>
+                    <MessageCircle size={18} /> Contactar vendedor
                   </Link>
                   <Link href={`/trueque/proponer?producto=${producto.id_producto}&vendedor=${producto.id_usuario}`}
                     className="w-full py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2"
-                    style={{ backgroundColor: '#c9a84c', color: '#0f2548' }}>
-                    <RefreshCw size={18} />
-                    Proponer Trueque
+                    style={{ backgroundColor: '#3b4fd8', color: 'white' }}>
+                    <RefreshCw size={18} /> Proponer Trueque
                   </Link>
                 </div>
               )}
               {usuario?.id === producto.id_usuario && (
-                <div className="p-4 rounded-xl text-center text-sm border" style={{ backgroundColor: '#e8eef7', borderColor: '#1a3a6b', color: '#1a3a6b' }}>
+                <div className="p-4 rounded-xl text-center text-sm border" style={{ backgroundColor: '#e8eaff', borderColor: '#3b4fd8', color: '#1a1f6e' }}>
                   Este es tu producto
                 </div>
               )}

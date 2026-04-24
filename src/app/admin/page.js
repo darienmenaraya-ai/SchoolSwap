@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { ArrowLeft, Users, Package, ShoppingCart, BarChart3 } from 'lucide-react'
 
 export default function Admin() {
   const router = useRouter()
@@ -17,22 +18,9 @@ export default function Admin() {
   useEffect(() => {
     async function verificarAdmin() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-
-      const { data } = await supabase
-        .from('usuario')
-        .select('rol')
-        .eq('id_usuario', user.id)
-        .single()
-
-      if (!data || data.rol !== 'administrador') {
-        router.push('/')
-        return
-      }
-
+      if (!user) { router.push('/auth/login'); return }
+      const { data } = await supabase.from('usuario').select('rol').eq('id_usuario', user.id).single()
+      if (!data || data.rol !== 'administrador') { router.push('/'); return }
       await cargarTodo()
       setLoading(false)
     }
@@ -41,12 +29,8 @@ export default function Admin() {
 
   async function cargarTodo() {
     const [
-      { count: totalUsuarios },
-      { count: totalProductos },
-      { count: totalPedidos },
-      { data: todosUsuarios },
-      { data: todosProductos },
-      { data: todosPedidos },
+      { count: totalUsuarios }, { count: totalProductos }, { count: totalPedidos },
+      { data: todosUsuarios }, { data: todosProductos }, { data: todosPedidos },
     ] = await Promise.all([
       supabase.from('usuario').select('*', { count: 'exact', head: true }),
       supabase.from('producto').select('*', { count: 'exact', head: true }),
@@ -55,14 +39,8 @@ export default function Admin() {
       supabase.from('producto').select('*, categoria(nombre), usuario(nombre, apellido)').order('created_at', { ascending: false }),
       supabase.from('pedido').select('*, usuario(nombre, apellido), detalle_pedido(cantidad)').order('created_at', { ascending: false }),
     ])
-
-    const { data: ventasData } = await supabase
-      .from('pedido')
-      .select('precio_total')
-      .eq('estado', 'completado')
-
+    const { data: ventasData } = await supabase.from('pedido').select('precio_total').eq('estado', 'completado')
     const totalVentas = ventasData?.reduce((acc, p) => acc + Number(p.precio_total), 0) || 0
-
     setStats({ totalUsuarios, totalProductos, totalPedidos, totalVentas })
     setUsuarios(todosUsuarios || [])
     setProductos(todosProductos || [])
@@ -85,112 +63,98 @@ export default function Admin() {
     setUsuarios(usuarios.map(u => u.id_usuario === id_usuario ? { ...u, activo: !activo } : u))
   }
 
-  function getEstadoColor(estado) {
+  function getEstadoStyle(estado) {
     switch (estado) {
-      case 'pendiente': return 'bg-yellow-900/50 border-yellow-500 text-yellow-300'
-      case 'procesando': return 'bg-blue-900/50 border-blue-500 text-blue-300'
-      case 'completado': return 'bg-green-900/50 border-green-500 text-green-300'
-      case 'cancelado': return 'bg-red-900/50 border-red-500 text-red-300'
-      default: return 'bg-gray-900/50 border-gray-500 text-gray-300'
+      case 'pendiente': return { backgroundColor: '#fefce8', borderColor: '#fde047', color: '#854d0e' }
+      case 'procesando': return { backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }
+      case 'completado': return { backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#166534' }
+      case 'cancelado': return { backgroundColor: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }
+      default: return { backgroundColor: '#f5f7ff', borderColor: '#e2e6ff', color: '#6b7280' }
     }
   }
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
-        <p className="text-gray-400">Verificando acceso...</p>
-      </main>
-    )
-  }
+  if (loading) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f7ff' }}><p style={{ color: '#6b7280' }}>Verificando acceso...</p></main>
+
+  const tabs = [
+    { id: 'estadisticas', label: 'Estadísticas', icon: <BarChart3 size={16} /> },
+    { id: 'usuarios', label: 'Usuarios', icon: <Users size={16} /> },
+    { id: 'productos', label: 'Productos', icon: <Package size={16} /> },
+    { id: 'pedidos', label: 'Pedidos', icon: <ShoppingCart size={16} /> },
+  ]
 
   return (
-    <main className="min-h-screen bg-[#0f0f0f] text-white">
-      <nav className="bg-[#1a1a1a] border-b border-[#2a2a2a] px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-blue-400">Marketplace Cedes Don Bosco</Link>
-        <span className="text-yellow-400 text-sm font-medium"> Panel de Administrador</span>
-        <Link href="/" className="text-gray-400 hover:text-white text-sm transition">← Volver</Link>
+    <main className="min-h-screen" style={{ backgroundColor: '#f5f7ff' }}>
+      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a1f6e' }}>
+        <Link href="/"><img src="/logo.png" alt="SchoolSwap" className="h-12 w-auto" /></Link>
+        <span className="text-sm font-bold" style={{ color: '#93c5fd' }}>Panel de Administrador</span>
+        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white"><ArrowLeft size={16} /> Volver</Link>
       </nav>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-
-        {/* TABS */}
-        <div className="flex gap-2 mb-8 bg-[#1a1a1a] p-1 rounded-xl w-fit">
-          {[
-            { id: 'estadisticas', label: '📊 Estadísticas' },
-            { id: 'usuarios', label: '👥 Usuarios' },
-            { id: 'productos', label: '📦 Productos' },
-            { id: 'pedidos', label: '🛒 Pedidos' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setSeccion(tab.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${seccion === tab.id ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
-            >
-              {tab.label}
+        <div className="flex gap-2 mb-8 bg-white p-1 rounded-xl w-fit shadow-sm border" style={{ borderColor: '#e2e6ff' }}>
+          {tabs.map((tab) => (
+            <button key={tab.id} onClick={() => setSeccion(tab.id)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition"
+              style={{ backgroundColor: seccion === tab.id ? '#1a1f6e' : 'transparent', color: seccion === tab.id ? 'white' : '#6b7280' }}>
+              {tab.icon} {tab.label}
             </button>
           ))}
         </div>
 
-        {/* ESTADÍSTICAS */}
         {seccion === 'estadisticas' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">📊 Estadísticas generales</h2>
+            <h2 className="text-xl font-extrabold mb-6" style={{ color: '#1a1f6e' }}>Estadísticas generales</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { label: 'Usuarios registrados', value: stats.totalUsuarios, icon: '👥', color: 'blue' },
-                { label: 'Productos publicados', value: stats.totalProductos, icon: '📦', color: 'purple' },
-                { label: 'Pedidos realizados', value: stats.totalPedidos, icon: '🛒', color: 'yellow' },
-                { label: 'Total en ventas', value: `₡${Number(stats.totalVentas).toLocaleString()}`, icon: '💰', color: 'green' },
+                { label: 'Usuarios registrados', value: stats.totalUsuarios, icon: <Users size={24} /> },
+                { label: 'Productos publicados', value: stats.totalProductos, icon: <Package size={24} /> },
+                { label: 'Pedidos realizados', value: stats.totalPedidos, icon: <ShoppingCart size={24} /> },
+                { label: 'Total en ventas', value: `₡${Number(stats.totalVentas).toLocaleString()}`, icon: <BarChart3 size={24} /> },
               ].map((stat) => (
-                <div key={stat.label} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
-                  <p className="text-4xl mb-3">{stat.icon}</p>
-                  <p className="text-3xl font-bold text-white">{stat.value}</p>
-                  <p className="text-gray-400 text-sm mt-1">{stat.label}</p>
+                <div key={stat.label} className="bg-white border rounded-xl p-6 shadow-sm" style={{ borderColor: '#e2e6ff' }}>
+                  <div className="mb-3" style={{ color: '#3b4fd8' }}>{stat.icon}</div>
+                  <p className="text-3xl font-extrabold" style={{ color: '#1a1f6e' }}>{stat.value}</p>
+                  <p className="text-sm mt-1" style={{ color: '#6b7280' }}>{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* USUARIOS */}
         {seccion === 'usuarios' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">👥 Usuarios ({usuarios.length})</h2>
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+            <h2 className="text-xl font-extrabold mb-6" style={{ color: '#1a1f6e' }}>Usuarios ({usuarios.length})</h2>
+            <div className="bg-white border rounded-xl overflow-hidden shadow-sm" style={{ borderColor: '#e2e6ff' }}>
               <table className="w-full">
-                <thead className="border-b border-[#2a2a2a]">
-                  <tr className="text-gray-400 text-sm">
-                    <th className="text-left p-4">Nombre</th>
-                    <th className="text-left p-4">Correo</th>
-                    <th className="text-left p-4">Rol</th>
-                    <th className="text-left p-4">Estado</th>
-                    <th className="text-left p-4">Registro</th>
-                    <th className="text-left p-4">Acción</th>
+                <thead style={{ backgroundColor: '#f5f7ff' }}>
+                  <tr className="text-sm border-b" style={{ borderColor: '#e2e6ff', color: '#6b7280' }}>
+                    <th className="text-left p-4 font-bold">Nombre</th>
+                    <th className="text-left p-4 font-bold">Correo</th>
+                    <th className="text-left p-4 font-bold">Rol</th>
+                    <th className="text-left p-4 font-bold">Estado</th>
+                    <th className="text-left p-4 font-bold">Registro</th>
+                    <th className="text-left p-4 font-bold">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {usuarios.map((u) => (
-                    <tr key={u.id_usuario} className="border-b border-[#2a2a2a] hover:bg-[#2a2a2a] transition">
-                      <td className="p-4 text-white font-medium">{u.nombre} {u.apellido}</td>
-                      <td className="p-4 text-gray-400 text-sm">{u.correo}</td>
+                    <tr key={u.id_usuario} className="border-b transition" style={{ borderColor: '#e2e6ff' }}>
+                      <td className="p-4 font-bold" style={{ color: '#1a1f6e' }}>{u.nombre} {u.apellido}</td>
+                      <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{u.correo}</td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full border ${u.rol === 'administrador' ? 'bg-yellow-900/50 border-yellow-500 text-yellow-300' : u.rol === 'padre' ? 'bg-purple-900/50 border-purple-500 text-purple-300' : 'bg-blue-900/50 border-blue-500 text-blue-300'}`}>
-                          {u.rol}
-                        </span>
+                        <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: '#e8eaff', color: '#3b4fd8' }}>{u.rol}</span>
                       </td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full border ${u.activo ? 'bg-green-900/50 border-green-500 text-green-300' : 'bg-red-900/50 border-red-500 text-red-300'}`}>
+                        <span className="text-xs font-bold px-2 py-1 rounded-full border"
+                          style={u.activo ? { backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#166534' } : { backgroundColor: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}>
                           {u.activo ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
-                      <td className="p-4 text-gray-400 text-sm">
-                        {new Date(u.created_at).toLocaleDateString('es-CR')}
-                      </td>
+                      <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{new Date(u.created_at).toLocaleDateString('es-CR')}</td>
                       <td className="p-4">
-                        <button
-                          onClick={() => toggleUsuario(u.id_usuario, u.activo)}
-                          className={`text-xs px-3 py-1 rounded-lg transition ${u.activo ? 'bg-red-900/50 hover:bg-red-900 text-red-300' : 'bg-green-900/50 hover:bg-green-900 text-green-300'}`}
-                        >
+                        <button onClick={() => toggleUsuario(u.id_usuario, u.activo)}
+                          className="text-xs px-3 py-1 rounded-lg font-bold transition border"
+                          style={u.activo ? { borderColor: '#fca5a5', color: '#dc2626', backgroundColor: 'white' } : { borderColor: '#86efac', color: '#166534', backgroundColor: 'white' }}>
                           {u.activo ? 'Desactivar' : 'Activar'}
                         </button>
                       </td>
@@ -202,41 +166,40 @@ export default function Admin() {
           </div>
         )}
 
-        {/* PRODUCTOS */}
         {seccion === 'productos' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">📦 Productos ({productos.length})</h2>
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+            <h2 className="text-xl font-extrabold mb-6" style={{ color: '#1a1f6e' }}>Productos ({productos.length})</h2>
+            <div className="bg-white border rounded-xl overflow-hidden shadow-sm" style={{ borderColor: '#e2e6ff' }}>
               <table className="w-full">
-                <thead className="border-b border-[#2a2a2a]">
-                  <tr className="text-gray-400 text-sm">
-                    <th className="text-left p-4">Producto</th>
-                    <th className="text-left p-4">Categoría</th>
-                    <th className="text-left p-4">Vendedor</th>
-                    <th className="text-left p-4">Precio</th>
-                    <th className="text-left p-4">Stock</th>
-                    <th className="text-left p-4">Estado</th>
-                    <th className="text-left p-4">Acción</th>
+                <thead style={{ backgroundColor: '#f5f7ff' }}>
+                  <tr className="text-sm border-b" style={{ borderColor: '#e2e6ff', color: '#6b7280' }}>
+                    <th className="text-left p-4 font-bold">Producto</th>
+                    <th className="text-left p-4 font-bold">Categoría</th>
+                    <th className="text-left p-4 font-bold">Vendedor</th>
+                    <th className="text-left p-4 font-bold">Precio</th>
+                    <th className="text-left p-4 font-bold">Stock</th>
+                    <th className="text-left p-4 font-bold">Estado</th>
+                    <th className="text-left p-4 font-bold">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {productos.map((p) => (
-                    <tr key={p.id_producto} className="border-b border-[#2a2a2a] hover:bg-[#2a2a2a] transition">
-                      <td className="p-4 text-white font-medium">{p.nombre}</td>
-                      <td className="p-4 text-gray-400 text-sm">{p.categoria?.nombre}</td>
-                      <td className="p-4 text-gray-400 text-sm">{p.usuario?.nombre} {p.usuario?.apellido}</td>
-                      <td className="p-4 text-blue-400 font-medium">₡{Number(p.precio).toLocaleString()}</td>
-                      <td className="p-4 text-gray-400 text-sm">{p.stock}</td>
+                    <tr key={p.id_producto} className="border-b" style={{ borderColor: '#e2e6ff' }}>
+                      <td className="p-4 font-bold" style={{ color: '#1a1f6e' }}>{p.nombre}</td>
+                      <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{p.categoria?.nombre}</td>
+                      <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{p.usuario?.nombre} {p.usuario?.apellido}</td>
+                      <td className="p-4 font-bold" style={{ color: '#3b4fd8' }}>₡{Number(p.precio).toLocaleString()}</td>
+                      <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{p.stock}</td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full border ${p.estado === 'publicado' ? 'bg-green-900/50 border-green-500 text-green-300' : p.estado === 'agotado' ? 'bg-yellow-900/50 border-yellow-500 text-yellow-300' : 'bg-red-900/50 border-red-500 text-red-300'}`}>
+                        <span className="text-xs font-bold px-2 py-1 rounded-full"
+                          style={p.estado === 'publicado' ? { backgroundColor: '#f0fdf4', color: '#166534' } : { backgroundColor: '#fef2f2', color: '#dc2626' }}>
                           {p.estado}
                         </span>
                       </td>
                       <td className="p-4">
-                        <button
-                          onClick={() => eliminarProducto(p.id_producto)}
-                          className="text-xs px-3 py-1 rounded-lg bg-red-900/50 hover:bg-red-900 text-red-300 transition"
-                        >
+                        <button onClick={() => eliminarProducto(p.id_producto)}
+                          className="text-xs px-3 py-1 rounded-lg font-bold border transition"
+                          style={{ borderColor: '#fca5a5', color: '#dc2626', backgroundColor: 'white' }}>
                           Eliminar
                         </button>
                       </td>
@@ -248,42 +211,37 @@ export default function Admin() {
           </div>
         )}
 
-        {/* PEDIDOS */}
         {seccion === 'pedidos' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">🛒 Pedidos ({pedidos.length})</h2>
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+            <h2 className="text-xl font-extrabold mb-6" style={{ color: '#1a1f6e' }}>Pedidos ({pedidos.length})</h2>
+            <div className="bg-white border rounded-xl overflow-hidden shadow-sm" style={{ borderColor: '#e2e6ff' }}>
               <table className="w-full">
-                <thead className="border-b border-[#2a2a2a]">
-                  <tr className="text-gray-400 text-sm">
-                    <th className="text-left p-4">ID Pedido</th>
-                    <th className="text-left p-4">Cliente</th>
-                    <th className="text-left p-4">Total</th>
-                    <th className="text-left p-4">Items</th>
-                    <th className="text-left p-4">Fecha</th>
-                    <th className="text-left p-4">Estado</th>
-                    <th className="text-left p-4">Cambiar estado</th>
+                <thead style={{ backgroundColor: '#f5f7ff' }}>
+                  <tr className="text-sm border-b" style={{ borderColor: '#e2e6ff', color: '#6b7280' }}>
+                    <th className="text-left p-4 font-bold">ID Pedido</th>
+                    <th className="text-left p-4 font-bold">Cliente</th>
+                    <th className="text-left p-4 font-bold">Total</th>
+                    <th className="text-left p-4 font-bold">Fecha</th>
+                    <th className="text-left p-4 font-bold">Estado</th>
+                    <th className="text-left p-4 font-bold">Cambiar estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pedidos.map((p) => (
-                    <tr key={p.id_pedido} className="border-b border-[#2a2a2a] hover:bg-[#2a2a2a] transition">
-                      <td className="p-4 text-gray-400 text-xs font-mono">#{p.id_pedido.slice(0, 8).toUpperCase()}</td>
-                      <td className="p-4 text-white font-medium">{p.usuario?.nombre} {p.usuario?.apellido}</td>
-                      <td className="p-4 text-blue-400 font-medium">₡{Number(p.precio_total).toLocaleString()}</td>
-                      <td className="p-4 text-gray-400 text-sm">{p.detalle_pedido?.length} items</td>
-                      <td className="p-4 text-gray-400 text-sm">{new Date(p.created_at).toLocaleDateString('es-CR')}</td>
+                    <tr key={p.id_pedido} className="border-b" style={{ borderColor: '#e2e6ff' }}>
+                      <td className="p-4 text-xs font-mono font-bold" style={{ color: '#3b4fd8' }}>#{p.id_pedido.slice(0, 8).toUpperCase()}</td>
+                      <td className="p-4 font-bold" style={{ color: '#1a1f6e' }}>{p.usuario?.nombre} {p.usuario?.apellido}</td>
+                      <td className="p-4 font-bold" style={{ color: '#3b4fd8' }}>₡{Number(p.precio_total).toLocaleString()}</td>
+                      <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{new Date(p.created_at).toLocaleDateString('es-CR')}</td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full border ${getEstadoColor(p.estado)}`}>
+                        <span className="text-xs font-bold px-2 py-1 rounded-full border" style={getEstadoStyle(p.estado)}>
                           {p.estado}
                         </span>
                       </td>
                       <td className="p-4">
-                        <select
-                          value={p.estado}
-                          onChange={(e) => cambiarEstadoPedido(p.id_pedido, e.target.value)}
-                          className="bg-[#2a2a2a] border border-[#3a3a3a] text-white text-xs rounded-lg px-2 py-1 focus:outline-none"
-                        >
+                        <select value={p.estado} onChange={(e) => cambiarEstadoPedido(p.id_pedido, e.target.value)}
+                          className="text-xs rounded-lg px-2 py-1 border focus:outline-none"
+                          style={{ borderColor: '#e2e6ff', color: '#1a1f6e', backgroundColor: 'white' }}>
                           <option value="pendiente">Pendiente</option>
                           <option value="procesando">Procesando</option>
                           <option value="completado">Completado</option>

@@ -64,75 +64,60 @@ export default function Carrito() {
   const total = items.reduce((acc, item) => acc + (item.cantidad * item.producto.precio), 0)
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: '#f5f7fa' }}>
-      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a3a6b' }}>
-        <Link href="/" className="text-2xl font-extrabold" style={{ color: '#c9a84c' }}>Market-cedes</Link>
-        <Link href="/" className="flex items-center gap-2 text-sm font-medium" style={{ color: 'white' }}>
-          <ArrowLeft size={16} /> Volver
-        </Link>
+    <main className="min-h-screen" style={{ backgroundColor: '#f5f7ff' }}>
+      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a1f6e' }}>
+        <Link href="/"><img src="/logo.png" alt="SchoolSwap" className="h-12 w-auto" /></Link>
+        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white"><ArrowLeft size={16} /> Volver</Link>
       </nav>
-
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-2xl font-extrabold mb-8 flex items-center gap-3" style={{ color: '#1a3a6b' }}>
+        <h1 className="text-2xl font-extrabold mb-8 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
           <ShoppingCart size={28} /> Mi Carrito
         </h1>
-
         {mensaje && (
-          <div className="p-4 rounded-xl mb-6 text-sm border" style={{ backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#16a34a' }}>
-            {mensaje}
-          </div>
+          <div className="p-4 rounded-xl mb-6 text-sm border" style={{ backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }}>{mensaje}</div>
         )}
-
         {loading ? (
-          <p style={{ color: '#64748b' }}>Cargando carrito...</p>
+          <p style={{ color: '#6b7280' }}>Cargando carrito...</p>
         ) : items.length === 0 ? (
           <div className="text-center py-20">
-            <ShoppingCart size={56} className="mx-auto mb-4" style={{ color: '#64748b' }} />
-            <p className="text-lg" style={{ color: '#64748b' }}>Tu carrito está vacío</p>
-            <Link href="/" className="mt-4 inline-block px-6 py-2 rounded-lg text-sm font-bold transition"
-              style={{ backgroundColor: '#1a3a6b', color: 'white' }}>Ver productos</Link>
+            <ShoppingCart size={56} className="mx-auto mb-4" style={{ color: '#6b7280' }} />
+            <p className="text-lg" style={{ color: '#6b7280' }}>Tu carrito está vacío</p>
+            <Link href="/" className="mt-4 inline-block px-6 py-2 rounded-lg text-sm font-bold" style={{ backgroundColor: '#1a1f6e', color: 'white' }}>Ver productos</Link>
           </div>
         ) : (
           <div className="space-y-4">
             {items.map((item) => (
-              <div key={item.id_item} className="bg-white border rounded-xl p-4 flex items-center gap-4 shadow-sm" style={{ borderColor: '#e2e8f0' }}>
-                <div className="w-20 h-20 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: '#f5f7fa' }}>
+              <div key={item.id_item} className="bg-white border rounded-xl p-4 flex items-center gap-4 shadow-sm" style={{ borderColor: '#e2e6ff' }}>
+                <div className="w-20 h-20 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: '#f5f7ff' }}>
                   {item.producto.imagen ? (
                     <img src={item.producto.imagen} alt={item.producto.nombre} className="w-full h-full object-cover" />
                   ) : (
-                    <Package size={32} style={{ color: '#64748b' }} />
+                    <Package size={32} style={{ color: '#6b7280' }} />
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold" style={{ color: '#1e293b' }}>{item.producto.nombre}</h3>
-                  <p className="font-bold text-sm" style={{ color: '#c9a84c' }}>₡{Number(item.producto.precio).toLocaleString()}</p>
+                  <h3 className="font-bold" style={{ color: '#1a1f6e' }}>{item.producto.nombre}</h3>
+                  <p className="font-bold text-sm" style={{ color: '#3b4fd8' }}>₡{Number(item.producto.precio).toLocaleString()}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button onClick={() => actualizarCantidad(item.id_item, item.cantidad - 1)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center font-bold border transition"
-                    style={{ borderColor: '#e2e8f0', color: '#1a3a6b' }}>-</button>
-                  <span className="w-8 text-center font-bold" style={{ color: '#1e293b' }}>{item.cantidad}</span>
+                    className="w-8 h-8 rounded-lg flex items-center justify-center font-bold border" style={{ borderColor: '#e2e6ff', color: '#1a1f6e' }}>-</button>
+                  <span className="w-8 text-center font-bold" style={{ color: '#1a1f6e' }}>{item.cantidad}</span>
                   <button onClick={() => actualizarCantidad(item.id_item, item.cantidad + 1)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center font-bold border transition"
-                    style={{ borderColor: '#e2e8f0', color: '#1a3a6b' }}>+</button>
+                    className="w-8 h-8 rounded-lg flex items-center justify-center font-bold border" style={{ borderColor: '#e2e6ff', color: '#1a1f6e' }}>+</button>
                 </div>
-                <p className="font-extrabold w-24 text-right" style={{ color: '#1a3a6b' }}>
-                  ₡{Number(item.cantidad * item.producto.precio).toLocaleString()}
-                </p>
-                <button onClick={() => eliminarItem(item.id_item)} className="transition" style={{ color: '#94a3b8' }}>
-                  <Trash2 size={18} />
-                </button>
+                <p className="font-extrabold w-24 text-right" style={{ color: '#1a1f6e' }}>₡{Number(item.cantidad * item.producto.precio).toLocaleString()}</p>
+                <button onClick={() => eliminarItem(item.id_item)} style={{ color: '#94a3b8' }}><Trash2 size={18} /></button>
               </div>
             ))}
-
-            <div className="bg-white border rounded-xl p-6 mt-6 shadow-sm" style={{ borderColor: '#e2e8f0' }}>
+            <div className="bg-white border rounded-xl p-6 mt-6 shadow-sm" style={{ borderColor: '#e2e6ff' }}>
               <div className="flex justify-between items-center mb-6">
-                <span className="text-lg font-semibold" style={{ color: '#64748b' }}>Total</span>
-                <span className="text-3xl font-extrabold" style={{ color: '#c9a84c' }}>₡{Number(total).toLocaleString()}</span>
+                <span className="text-lg font-semibold" style={{ color: '#6b7280' }}>Total</span>
+                <span className="text-3xl font-extrabold" style={{ color: '#3b4fd8' }}>₡{Number(total).toLocaleString()}</span>
               </div>
               <button onClick={realizarPedido} disabled={procesando}
                 className="w-full py-3 rounded-xl font-bold text-sm transition"
-                style={{ backgroundColor: '#1a3a6b', color: 'white' }}>
+                style={{ backgroundColor: '#1a1f6e', color: 'white' }}>
                 {procesando ? 'Procesando...' : 'Realizar Pedido'}
               </button>
             </div>

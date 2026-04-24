@@ -2,21 +2,19 @@
 @import "tailwindcss";
 
 :root {
-  --azul: #1a3a6b;
-  --azul-oscuro: #0f2548;
-  --azul-claro: #e8eef7;
-  --dorado: #c9a84c;
-  --dorado-oscuro: #a8872e;
-  --dorado-claro: #fdf6e3;
-  --gris-claro: #f5f7fa;
-  --gris: #e2e8f0;
-  --texto: #1e293b;
-  --texto-suave: #64748b;
+  --azul-oscuro: #1a1f6e;
+  --azul-medio: #3b4fd8;
+  --azul-claro: #e8eaff;
+  --blanco: #ffffff;
+  --gris-claro: #f5f7ff;
+  --gris: #e2e6ff;
+  --texto: #1a1f6e;
+  --texto-suave: #6b7280;
 }
 
 html, body {
-  background-color: #f5f7fa;
-  color: #1e293b;
+  background-color: #f5f7ff;
+  color: #1a1f6e;
   font-family: 'Nunito', sans-serif;
   margin: 0;
   padding: 0;
