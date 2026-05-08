@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Send, MessageCircle } from 'lucide-react'
+import { sanitizeText } from '@/lib/security'
 
 function MensajesContenido() {
   const router = useRouter()
@@ -80,10 +81,13 @@ function MensajesContenido() {
 
   async function enviarMensaje(e) {
     e.preventDefault()
-    if (!nuevoMensaje.trim() || !usuarioSeleccionado) return
+    const texto = nuevoMensaje.trim()
+    if (!texto || !usuarioSeleccionado || texto.length > 1000) return
     setEnviando(true)
     const { error } = await supabase.from('mensaje').insert({
-      contenido: nuevoMensaje.trim(), id_remitente: usuario.id, id_receptor: usuarioSeleccionado.id_usuario,
+      contenido: sanitizeText(texto),
+      id_remitente: usuario.id,
+      id_receptor: usuarioSeleccionado.id_usuario,
     })
     if (!error) {
       setNuevoMensaje('')
@@ -94,32 +98,42 @@ function MensajesContenido() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-extrabold mb-6 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
         <MessageCircle size={28} /> Mensajes
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
-        <div className="bg-white border rounded-xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: '#e2e6ff' }}>
-          <div className="p-4 border-b" style={{ borderColor: '#e2e6ff', backgroundColor: '#f5f7ff' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px]">
+        {/* CONVERSACIONES */}
+        <div className="bg-white border rounded-2xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: '#e5e7eb' }}>
+          <div className="p-4 border-b" style={{ borderColor: '#f3f4f6', backgroundColor: '#fafbff' }}>
             <h2 className="font-bold text-sm" style={{ color: '#1a1f6e' }}>Conversaciones</h2>
           </div>
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <p className="text-sm p-4" style={{ color: '#6b7280' }}>Cargando...</p>
+              <p className="text-sm p-4" style={{ color: '#9ca3af' }}>Cargando...</p>
             ) : conversaciones.length === 0 ? (
-              <p className="text-sm p-4 text-center" style={{ color: '#6b7280' }}>No tenés conversaciones aún</p>
+              <div className="p-6 text-center">
+                <MessageCircle size={32} className="mx-auto mb-2" style={{ color: '#d1d5db' }} />
+                <p className="text-sm" style={{ color: '#9ca3af' }}>Sin conversaciones aún</p>
+              </div>
             ) : (
               conversaciones.map((conv) => (
                 <button key={conv.usuario.id_usuario} onClick={() => seleccionarConversacion(conv)}
-                  className="w-full p-4 text-left transition border-b"
-                  style={{ borderColor: '#e2e6ff', backgroundColor: usuarioSeleccionado?.id_usuario === conv.usuario.id_usuario ? '#e8eaff' : 'white' }}>
+                  className="w-full p-4 text-left transition-colors border-b hover:bg-gray-50"
+                  style={{
+                    borderColor: '#f3f4f6',
+                    backgroundColor: usuarioSeleccionado?.id_usuario === conv.usuario.id_usuario ? '#f0f4ff' : 'white',
+                  }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1a1f6e' }}>
-                      <span className="text-sm font-bold text-white">{conv.usuario.nombre?.charAt(0).toUpperCase()}</span>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white text-sm"
+                      style={{ backgroundColor: '#1a1f6e' }}>
+                      {conv.usuario.nombre?.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold" style={{ color: '#1a1f6e' }}>{conv.usuario.nombre} {conv.usuario.apellido}</p>
-                      <p className="text-xs truncate" style={{ color: '#6b7280' }}>{conv.ultimoMensaje.contenido}</p>
+                      <p className="text-sm font-bold truncate" style={{ color: '#111827' }}>
+                        {conv.usuario.nombre} {conv.usuario.apellido}
+                      </p>
+                      <p className="text-xs truncate" style={{ color: '#9ca3af' }}>{conv.ultimoMensaje.contenido}</p>
                     </div>
                   </div>
                 </button>
@@ -128,36 +142,51 @@ function MensajesContenido() {
           </div>
         </div>
 
-        <div className="md:col-span-2 bg-white border rounded-xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: '#e2e6ff' }}>
+        {/* CHAT */}
+        <div className="md:col-span-2 bg-white border rounded-2xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: '#e5e7eb' }}>
           {!usuarioSeleccionado ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <MessageCircle size={48} className="mx-auto mb-4" style={{ color: '#6b7280' }} />
-                <p style={{ color: '#6b7280' }}>Seleccioná una conversación para chatear</p>
+                <MessageCircle size={48} className="mx-auto mb-3" style={{ color: '#d1d5db' }} />
+                <p className="font-medium" style={{ color: '#6b7280' }}>Seleccioná una conversación</p>
+                <p className="text-sm mt-1" style={{ color: '#9ca3af' }}>para empezar a chatear</p>
               </div>
             </div>
           ) : (
             <>
-              <div className="p-4 border-b flex items-center gap-3" style={{ borderColor: '#e2e6ff', backgroundColor: '#f5f7ff' }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#1a1f6e' }}>
-                  <span className="text-sm font-bold text-white">{usuarioSeleccionado.nombre?.charAt(0).toUpperCase()}</span>
+              <div className="p-4 border-b flex items-center gap-3" style={{ borderColor: '#f3f4f6', backgroundColor: '#fafbff' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm"
+                  style={{ backgroundColor: '#1a1f6e' }}>
+                  {usuarioSeleccionado.nombre?.charAt(0).toUpperCase()}
                 </div>
-                <p className="font-bold" style={{ color: '#1a1f6e' }}>{usuarioSeleccionado.nombre} {usuarioSeleccionado.apellido}</p>
+                <div>
+                  <p className="font-bold text-sm" style={{ color: '#111827' }}>
+                    {usuarioSeleccionado.nombre} {usuarioSeleccionado.apellido}
+                  </p>
+                  <p className="text-xs" style={{ color: '#9ca3af' }}>En línea</p>
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ backgroundColor: '#fafbff' }}>
                 {mensajes.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-sm" style={{ color: '#6b7280' }}>Enviá un mensaje para iniciar la conversación</p>
+                    <p className="text-sm" style={{ color: '#9ca3af' }}>Enviá un mensaje para iniciar</p>
                   </div>
                 ) : (
                   mensajes.map((msg) => {
                     const esMio = msg.id_remitente === usuario?.id
                     return (
                       <div key={msg.id_mensaje} className={`flex ${esMio ? 'justify-end' : 'justify-start'}`}>
-                        <div className="max-w-xs px-4 py-2 rounded-2xl text-sm"
-                          style={{ backgroundColor: esMio ? '#1a1f6e' : '#e8eaff', color: esMio ? 'white' : '#1a1f6e', borderRadius: esMio ? '18px 18px 4px 18px' : '18px 18px 18px 4px' }}>
+                        <div className="max-w-xs lg:max-w-md px-4 py-2.5 text-sm"
+                          style={{
+                            backgroundColor: esMio ? '#1a1f6e' : 'white',
+                            color: esMio ? 'white' : '#111827',
+                            borderRadius: esMio ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                            border: esMio ? 'none' : '1px solid #e5e7eb',
+                          }}>
                           <p>{msg.contenido}</p>
-                          <p className="text-xs mt-1" style={{ color: esMio ? '#93c5fd' : '#6b7280' }}>
+                          <p className="text-xs mt-1" style={{ color: esMio ? '#a5b4fc' : '#9ca3af' }}>
                             {new Date(msg.created_at).toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
@@ -167,14 +196,21 @@ function MensajesContenido() {
                 )}
                 <div ref={mensajesEndRef} />
               </div>
-              <form onSubmit={enviarMensaje} className="p-4 border-t flex gap-3" style={{ borderColor: '#e2e6ff' }}>
-                <input type="text" value={nuevoMensaje} onChange={(e) => setNuevoMensaje(e.target.value)}
+
+              <form onSubmit={enviarMensaje} className="p-4 border-t flex gap-3 items-center" style={{ borderColor: '#e5e7eb' }}>
+                <input type="text" value={nuevoMensaje}
+                  onChange={(e) => setNuevoMensaje(e.target.value.slice(0, 1000))}
                   placeholder="Escribí un mensaje..."
-                  className="flex-1 rounded-xl px-4 py-2 text-sm border focus:outline-none"
-                  style={{ borderColor: '#e2e6ff', color: '#1a1f6e' }} />
+                  className="flex-1 rounded-xl px-4 py-2.5 text-sm border-2 outline-none transition-all"
+                  style={{ borderColor: '#e5e7eb', color: '#111827', backgroundColor: '#fafafa' }}
+                  maxLength={1000} />
                 <button type="submit" disabled={enviando || !nuevoMensaje.trim()}
-                  className="px-4 py-2 rounded-xl transition flex items-center justify-center"
-                  style={{ backgroundColor: '#1a1f6e', color: 'white' }}>
+                  className="px-4 py-2.5 rounded-xl transition-all flex items-center justify-center"
+                  style={{
+                    backgroundColor: nuevoMensaje.trim() ? '#1a1f6e' : '#e5e7eb',
+                    color: nuevoMensaje.trim() ? 'white' : '#9ca3af',
+                    cursor: (enviando || !nuevoMensaje.trim()) ? 'not-allowed' : 'pointer',
+                  }}>
                   <Send size={16} />
                 </button>
               </form>
@@ -188,10 +224,18 @@ function MensajesContenido() {
 
 export default function Mensajes() {
   return (
-    <main className="min-h-screen" style={{ backgroundColor: '#f5f7ff' }}>
-      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a1f6e' }}>
-        <Link href="/"><img src="/logo.png" alt="SchoolSwap" className="h-12 w-auto" /></Link>
-        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white"><ArrowLeft size={16} /> Volver</Link>
+    <main className="min-h-screen" style={{ backgroundColor: '#f0f4ff' }}>
+      <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <Link href="/">
+            <div className="bg-white rounded-xl px-4 py-2 shadow-md">
+              <img src="/logo.png" alt="SchoolSwap" style={{ height: '48px', width: 'auto', display: 'block' }} />
+            </div>
+          </Link>
+          <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80">
+            <ArrowLeft size={16} /> Volver
+          </Link>
+        </div>
       </nav>
       <Suspense fallback={<div className="flex items-center justify-center h-96"><p style={{ color: '#6b7280' }}>Cargando...</p></div>}>
         <MensajesContenido />

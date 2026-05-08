@@ -1,25 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-:root {
-  --azul-oscuro: #1a1f6e;
-  --azul-medio: #3b4fd8;
-  --azul-claro: #e8eaff;
-  --blanco: #ffffff;
-  --gris-claro: #f5f7ff;
-  --gris: #e2e6ff;
-  --texto: #1a1f6e;
-  --texto-suave: #6b7280;
-}
-
 html, body {
-  background-color: #f5f7ff;
+  background-color: #f0f4ff;
   color: #1a1f6e;
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Poppins', sans-serif;
   margin: 0;
   padding: 0;
 }
 
 * {
   box-sizing: border-box;
+}
+
+input, textarea, select {
+  font-family: 'Poppins', sans-serif;
+}
+
+button {
+  font-family: 'Poppins', sans-serif;
 }

@@ -1,17 +1,21 @@
-import { Nunito } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 
-const nunito = Nunito({ subsets: ['latin'] })
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+})
 
 export const metadata = {
   title: 'SchoolSwap - Cedes Don Bosco',
-  description: 'Comprá y vendé en tu colegio',
+  description: 'El marketplace oficial del Colegio Cedes Don Bosco',
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body className={nunito.className} style={{ backgroundColor: '#f5f7ff', color: '#1a1f6e' }}>
+      <body className={poppins.className} style={{ backgroundColor: '#f0f4ff' }}>
         {children}
       </body>
     </html>
