@@ -63,12 +63,21 @@ export default function Trueque() {
     )
   }
 
-  return (
-    <main className="min-h-screen" style={{ backgroundColor: '#f5f7ff' }}>
-      <nav className="px-6 py-3 flex items-center justify-between shadow-lg" style={{ backgroundColor: '#1a1f6e' }}>
-        <Link href="/"><img src="/logo.png" alt="SchoolSwap" className="h-12 w-auto" /></Link>
-        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white"><ArrowLeft size={16} /> Volver</Link>
-      </nav>
+return (
+  <main className="min-h-screen" style={{ backgroundColor: '#f0f4ff' }}>
+    <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <Link href="/">
+          <div className="bg-white rounded-xl px-4 py-2 shadow-md">
+            <img src="/logo.png" alt="SchoolSwap" style={{ height: '48px', width: 'auto', display: 'block' }} />
+          </div>
+        </Link>
+        <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80">
+          <ArrowLeft size={16} /> Volver
+        </Link>
+      </div>
+    </nav>
+
       <div className="max-w-5xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-extrabold mb-2 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
           <RefreshCw size={28} /> Trueques
