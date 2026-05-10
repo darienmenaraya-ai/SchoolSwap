@@ -162,10 +162,10 @@ export default function Home() {
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">
             El marketplace de<br />
-            <span style={{ color: '#a5b4fc' }}>Cedes Don Bosco</span>
+            <span style={{ color: '#a5b4fc' }}>CEDES Don Bosco</span>
           </h1>
           <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto" style={{ color: '#c7d2fe' }}>
-            Comprá, vendé e intercambiá útiles, libros, uniformes y más con tus compañeros.
+            Compra, vende y intercambia útiles, libros, uniformes y más con tus compañeros.
           </p>
           {!usuario ? (
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

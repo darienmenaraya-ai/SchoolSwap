@@ -58,7 +58,7 @@ export default function Login() {
           <div className="inline-block bg-white rounded-2xl px-8 py-3 shadow-lg">
             <img src="/logo.png" alt="SchoolSwap" style={{ height: '88px', width: 'auto' }} />
           </div>
-          <p className="mt-3 text-sm font-medium" style={{ color: '#6b7280' }}>Cedes Don Bosco</p>
+          <p className="mt-3 text-sm font-medium" style={{ color: '#6b7280' }}>CEDES Don Bosco</p>
         </div>
         <div className="bg-white rounded-3xl shadow-xl p-8 border" style={{ borderColor: '#e2e8ff' }}>
           <h1 className="text-2xl font-bold mb-2" style={{ color: '#1a1f6e' }}>Bienvenido de vuelta</h1>
@@ -107,7 +107,7 @@ export default function Login() {
           </form>
           <div className="mt-6 pt-6 border-t text-center" style={{ borderColor: '#f3f4f6' }}>
             <p className="text-sm" style={{ color: '#6b7280' }}>
-              ¿No tenés cuenta?{' '}
+              ¿No tienes una cuenta?{' '}
               <Link href="/auth/registro" className="font-bold" style={{ color: '#3b4fd8' }}>Registrate gratis</Link>
             </p>
           </div>

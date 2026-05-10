@@ -84,10 +84,10 @@ export default function Registro() {
           <div className="inline-block bg-white rounded-2xl px-8 py-3 shadow-lg">
             <img src="/logo.png" alt="SchoolSwap" style={{ height: '88px', width: 'auto' }} />
           </div>
-          <p className="mt-3 text-sm font-medium" style={{ color: '#6b7280' }}>Cedes Don Bosco</p>
+          <p className="mt-3 text-sm font-medium" style={{ color: '#6b7280' }}>CEDES Don Bosco</p>
         </div>
         <div className="bg-white rounded-3xl shadow-xl p-8 border" style={{ borderColor: '#e2e8ff' }}>
-          <h1 className="text-2xl font-bold mb-2" style={{ color: '#1a1f6e' }}>Creá tu cuenta</h1>
+          <h1 className="text-2xl font-bold mb-2" style={{ color: '#1a1f6e' }}>Crea tu cuenta</h1>
           <p className="text-sm mb-6" style={{ color: '#6b7280' }}>Únete al marketplace de tu colegio</p>
           {error && (
             <div className="flex items-center gap-2 p-3 rounded-xl mb-4 text-sm"
