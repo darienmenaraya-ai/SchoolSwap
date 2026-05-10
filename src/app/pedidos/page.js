@@ -37,10 +37,10 @@ export default function Pedidos() {
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#f0f4ff' }}>
       <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <Link href="/">
-            <div className="bg-white rounded-xl px-4 py-2 shadow-md">
-              <img src="/logo.png" alt="SchoolSwap" style={{ height: '48px', width: 'auto', display: 'block' }} />
+            <div className="bg-white rounded-xl px-3 py-1 shadow-md">
+              <img src="/logo.png" alt="SchoolSwap" style={{ height: '80px', width: 'auto', display: 'block' }} />
             </div>
           </Link>
           <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80">
@@ -48,12 +48,10 @@ export default function Pedidos() {
           </Link>
         </div>
       </nav>
-
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
           <Package size={28} /> Mis Pedidos
         </h1>
-
         {loading ? (
           <div className="space-y-4">
             {[1,2].map(i => (
@@ -79,9 +77,7 @@ export default function Pedidos() {
                   style={{ borderColor: '#e5e7eb' }}>
                   <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: '#f3f4f6', backgroundColor: '#fafbff' }}>
                     <div>
-                      <p className="font-bold text-sm" style={{ color: '#1a1f6e' }}>
-                        Pedido #{pedido.id_pedido.slice(0, 8).toUpperCase()}
-                      </p>
+                      <p className="font-bold text-sm" style={{ color: '#1a1f6e' }}>Pedido #{pedido.id_pedido.slice(0, 8).toUpperCase()}</p>
                       <p className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>
                         {new Date(pedido.created_at).toLocaleDateString('es-CR', { year: 'numeric', month: 'long', day: 'numeric' })}
                       </p>
@@ -91,29 +87,22 @@ export default function Pedidos() {
                         style={{ backgroundColor: estado.bg, borderColor: estado.border, color: estado.text }}>
                         {estado.label}
                       </span>
-                      <span className="font-extrabold text-sm" style={{ color: '#1a1f6e' }}>
-                        ₡{Number(pedido.precio_total).toLocaleString()}
-                      </span>
+                      <span className="font-extrabold text-sm" style={{ color: '#1a1f6e' }}>₡{Number(pedido.precio_total).toLocaleString()}</span>
                     </div>
                   </div>
                   <div className="p-4 space-y-3">
                     {pedido.detalle_pedido?.map((detalle) => (
                       <div key={detalle.id_detalle} className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
-                          style={{ backgroundColor: '#f8faff' }}>
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: '#f8faff' }}>
                           {detalle.producto?.imagen ? (
                             <img src={detalle.producto.imagen} alt={detalle.producto.nombre} className="w-full h-full object-cover" />
                           ) : <Package size={18} style={{ color: '#d1d5db' }} />}
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold" style={{ color: '#111827' }}>{detalle.producto?.nombre}</p>
-                          <p className="text-xs" style={{ color: '#9ca3af' }}>
-                            {detalle.cantidad} × ₡{Number(detalle.precio_unitario).toLocaleString()}
-                          </p>
+                          <p className="text-xs" style={{ color: '#9ca3af' }}>{detalle.cantidad} × ₡{Number(detalle.precio_unitario).toLocaleString()}</p>
                         </div>
-                        <p className="font-bold text-sm" style={{ color: '#1a1f6e' }}>
-                          ₡{Number(detalle.cantidad * detalle.precio_unitario).toLocaleString()}
-                        </p>
+                        <p className="font-bold text-sm" style={{ color: '#1a1f6e' }}>₡{Number(detalle.cantidad * detalle.precio_unitario).toLocaleString()}</p>
                       </div>
                     ))}
                   </div>

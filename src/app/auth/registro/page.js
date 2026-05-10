@@ -34,34 +34,23 @@ export default function Registro() {
   async function handleRegistro(e) {
     e.preventDefault()
     if (!validate()) return
-
     const rateLimitKey = `register_${form.correo.toLowerCase()}`
     if (!checkRateLimit(rateLimitKey, 3, 60 * 60 * 1000)) {
       setError('Demasiados intentos de registro. Esperá 1 hora.')
       return
     }
-
     setLoading(true)
     setError('')
-
     try {
       const cleanEmail = form.correo.trim().toLowerCase()
       const cleanNombre = sanitizeText(form.nombre)
       const cleanApellido = sanitizeText(form.apellido)
-
       const { data, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
         password: form.contrasena,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        },
+        options: { emailRedirectTo: `${window.location.origin}/` },
       })
-
-      if (authError) {
-        setError(safeErrorMessage(authError))
-        return
-      }
-
+      if (authError) { setError(safeErrorMessage(authError)); return }
       if (data?.user) {
         const { error: dbError } = await supabase.from('usuario').insert({
           id_usuario: data.user.id,
@@ -71,12 +60,7 @@ export default function Registro() {
           contrasena: '***',
           rol: form.rol,
         })
-
-        if (dbError) {
-          setError('Error al crear el perfil. Intentá de nuevo.')
-          return
-        }
-
+        if (dbError) { setError('Error al crear el perfil. Intentá de nuevo.'); return }
         router.push('/')
         router.refresh()
       }
@@ -89,31 +73,28 @@ export default function Registro() {
 
   const inputStyle = (field) => ({
     borderColor: fieldErrors[field] ? '#fca5a5' : '#e5e7eb',
-    color: '#111827',
-    backgroundColor: '#fafafa',
+    color: '#111827', backgroundColor: '#fafafa',
   })
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%)' }}>
+    <main className="min-h-screen flex items-center justify-center px-4 py-8"
+      style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%)' }}>
       <div className="w-full max-w-md">
-
         <div className="text-center mb-8">
-          <div className="inline-block bg-white rounded-2xl px-8 py-4 shadow-lg">
-            <img src="/logo.png" alt="SchoolSwap" style={{ height: '64px', width: 'auto' }} />
+          <div className="inline-block bg-white rounded-2xl px-8 py-3 shadow-lg">
+            <img src="/logo.png" alt="SchoolSwap" style={{ height: '88px', width: 'auto' }} />
           </div>
           <p className="mt-3 text-sm font-medium" style={{ color: '#6b7280' }}>Cedes Don Bosco</p>
         </div>
-
         <div className="bg-white rounded-3xl shadow-xl p-8 border" style={{ borderColor: '#e2e8ff' }}>
           <h1 className="text-2xl font-bold mb-2" style={{ color: '#1a1f6e' }}>Creá tu cuenta</h1>
           <p className="text-sm mb-6" style={{ color: '#6b7280' }}>Únete al marketplace de tu colegio</p>
-
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl mb-4 text-sm" style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+            <div className="flex items-center gap-2 p-3 rounded-xl mb-4 text-sm"
+              style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
               <span>⚠</span> {error}
             </div>
           )}
-
           <form onSubmit={handleRegistro} className="space-y-4" noValidate>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -137,7 +118,6 @@ export default function Registro() {
                 {fieldErrors.apellido && <p className="text-xs mt-1" style={{ color: '#dc2626' }}>{fieldErrors.apellido}</p>}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Correo electrónico</label>
               <div className="relative">
@@ -148,7 +128,6 @@ export default function Registro() {
               </div>
               {fieldErrors.correo && <p className="text-xs mt-1" style={{ color: '#dc2626' }}>{fieldErrors.correo}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Contraseña</label>
               <div className="relative">
@@ -163,7 +142,6 @@ export default function Registro() {
               </div>
               {fieldErrors.contrasena && <p className="text-xs mt-1" style={{ color: '#dc2626' }}>{fieldErrors.contrasena}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Rol</label>
               <select name="rol" value={form.rol} onChange={handleChange}
@@ -173,26 +151,17 @@ export default function Registro() {
                 <option value="padre">Padre de familia</option>
               </select>
             </div>
-
             <button type="submit" disabled={loading}
               className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-              style={{
-                backgroundColor: loading ? '#6b7280' : '#1a1f6e',
-                color: 'white',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 15px rgba(26, 31, 110, 0.3)',
-              }}>
+              style={{ backgroundColor: loading ? '#6b7280' : '#1a1f6e', color: 'white', cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(26,31,110,0.3)' }}>
               <UserPlus size={16} />
               {loading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
           </form>
-
           <div className="mt-6 pt-6 border-t text-center" style={{ borderColor: '#f3f4f6' }}>
             <p className="text-sm" style={{ color: '#6b7280' }}>
               ¿Ya tenés cuenta?{' '}
-              <Link href="/auth/login" className="font-bold" style={{ color: '#3b4fd8' }}>
-                Iniciá sesión
-              </Link>
+              <Link href="/auth/login" className="font-bold" style={{ color: '#3b4fd8' }}>Iniciá sesión</Link>
             </p>
           </div>
         </div>

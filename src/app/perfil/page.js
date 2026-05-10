@@ -72,10 +72,10 @@ export default function Perfil() {
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#f0f4ff' }}>
       <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <Link href="/">
-            <div className="bg-white rounded-xl px-4 py-2 shadow-md">
-              <img src="/logo.png" alt="SchoolSwap" style={{ height: '48px', width: 'auto', display: 'block' }} />
+            <div className="bg-white rounded-xl px-3 py-1 shadow-md">
+              <img src="/logo.png" alt="SchoolSwap" style={{ height: '80px', width: 'auto', display: 'block' }} />
             </div>
           </Link>
           <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80">
@@ -83,23 +83,19 @@ export default function Perfil() {
           </Link>
         </div>
       </nav>
-
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
           <User size={28} /> Mi Perfil
         </h1>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white border rounded-3xl p-6 shadow-sm" style={{ borderColor: '#e5e7eb' }}>
             <h2 className="text-lg font-bold mb-5" style={{ color: '#1a1f6e' }}>Datos personales</h2>
-
             {mensaje && (
               <div className="flex items-center gap-2 p-3 rounded-xl mb-4 text-sm"
                 style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #86efac' }}>
                 <CheckCircle size={16} /> {mensaje}
               </div>
             )}
-
             <form onSubmit={handleGuardar} className="space-y-4" noValidate>
               <div>
                 <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Nombre</label>
@@ -137,7 +133,6 @@ export default function Perfil() {
               </button>
             </form>
           </div>
-
           <div className="bg-white border rounded-3xl p-6 shadow-sm" style={{ borderColor: '#e5e7eb' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold" style={{ color: '#1a1f6e' }}>Mis productos</h2>
@@ -156,8 +151,7 @@ export default function Perfil() {
                 {productos.map((producto) => (
                   <div key={producto.id_producto} className="flex items-center gap-3 rounded-xl p-3 border hover:bg-gray-50 transition-colors"
                     style={{ borderColor: '#f3f4f6' }}>
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
-                      style={{ backgroundColor: '#f8faff' }}>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: '#f8faff' }}>
                       {producto.imagen ? (
                         <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" />
                       ) : <Package size={20} style={{ color: '#d1d5db' }} />}
@@ -166,8 +160,7 @@ export default function Perfil() {
                       <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>{producto.nombre}</p>
                       <p className="text-xs font-bold" style={{ color: '#3b4fd8' }}>₡{Number(producto.precio).toLocaleString()}</p>
                     </div>
-                    <button onClick={() => eliminarProducto(producto.id_producto)}
-                      className="p-2 rounded-lg hover:bg-red-50 transition-colors">
+                    <button onClick={() => eliminarProducto(producto.id_producto)} className="p-2 rounded-lg hover:bg-red-50 transition-colors">
                       <Trash2 size={15} style={{ color: '#9ca3af' }} />
                     </button>
                   </div>

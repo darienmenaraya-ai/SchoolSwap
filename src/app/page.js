@@ -61,10 +61,10 @@ export default function Home() {
 
       {/* NAVBAR */}
       <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <Link href="/">
-            <div className="bg-white rounded-xl px-4 py-2 shadow-md hover:shadow-lg transition-shadow">
-              <img src="/logo.png" alt="SchoolSwap" style={{ height: '52px', width: 'auto', display: 'block' }} />
+            <div className="bg-white rounded-xl px-3 py-1 shadow-md hover:shadow-lg transition-shadow">
+              <img src="/logo.png" alt="SchoolSwap" style={{ height: '80px', width: 'auto', display: 'block' }} />
             </div>
           </Link>
 
@@ -113,13 +113,11 @@ export default function Home() {
             )}
           </div>
 
-          {/* Mobile menu */}
           <button className="md:hidden text-white p-2" onClick={() => setMenuAbierto(!menuAbierto)}>
             <ChevronDown size={20} />
           </button>
         </div>
 
-        {/* Mobile dropdown */}
         {menuAbierto && (
           <div className="md:hidden border-t px-4 py-3 space-y-2" style={{ borderColor: 'rgba(255,255,255,0.1)', backgroundColor: '#1a1f6e' }}>
             {usuario ? (
@@ -160,7 +158,7 @@ export default function Home() {
       <section style={{ background: 'linear-gradient(135deg, #1a1f6e 0%, #3b4fd8 60%, #5b6ef5 100%)' }} className="px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-block bg-white rounded-2xl px-8 py-4 shadow-xl mb-8">
-            <img src="/logo.png" alt="SchoolSwap" style={{ height: '72px', width: 'auto' }} />
+            <img src="/logo.png" alt="SchoolSwap" style={{ height: '100px', width: 'auto' }} />
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">
             El marketplace de<br />
@@ -306,16 +304,6 @@ export default function Home() {
           </div>
         )}
       </section>
-
-      {/* FOOTER */}
-      <footer className="border-t py-8" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }}>
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-block bg-white rounded-xl px-4 py-2 shadow-sm border mb-3" style={{ borderColor: '#e5e7eb' }}>
-            <img src="/logo.png" alt="SchoolSwap" style={{ height: '36px', width: 'auto' }} />
-          </div>
-          <p className="text-sm" style={{ color: '#9ca3af' }}>© 2025 SchoolSwap · Cedes Don Bosco · Todos los derechos reservados</p>
-        </div>
-      </footer>
     </main>
   )
 }

@@ -43,12 +43,10 @@ export default function Carrito() {
     setProcesando(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
-
     const total = items.reduce((acc, item) => acc + (item.cantidad * item.producto.precio), 0)
     const { data: pedido, error: pedidoError } = await supabase.from('pedido')
       .insert({ id_usuario: user.id, precio_total: total, estado: 'pendiente' }).select().single()
     if (pedidoError) { setMensaje({ text: 'Error al crear el pedido', type: 'error' }); setProcesando(false); return }
-
     for (const item of items) {
       const { error: detalleError } = await supabase.from('detalle_pedido').insert({
         id_pedido: pedido.id_pedido, id_producto: item.producto.id_producto,
@@ -56,7 +54,6 @@ export default function Carrito() {
       })
       if (detalleError) { setMensaje({ text: 'Error al procesar el pedido', type: 'error' }); setProcesando(false); return }
     }
-
     const { data: carrito } = await supabase.from('carrito').select('*').eq('id_usuario', user.id).single()
     await supabase.from('carrito_item').delete().eq('id_carrito', carrito.id_carrito)
     setItems([])
@@ -70,10 +67,10 @@ export default function Carrito() {
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#f0f4ff' }}>
       <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <Link href="/">
-            <div className="bg-white rounded-xl px-4 py-2 shadow-md">
-              <img src="/logo.png" alt="SchoolSwap" style={{ height: '48px', width: 'auto', display: 'block' }} />
+            <div className="bg-white rounded-xl px-3 py-1 shadow-md">
+              <img src="/logo.png" alt="SchoolSwap" style={{ height: '80px', width: 'auto', display: 'block' }} />
             </div>
           </Link>
           <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80 transition-opacity">
@@ -81,29 +78,22 @@ export default function Carrito() {
           </Link>
         </div>
       </nav>
-
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: '#1a1f6e' }}>
           <ShoppingCart size={28} /> Mi Carrito
         </h1>
-
         {mensaje.text && (
           <div className="flex items-center gap-2 p-4 rounded-xl mb-6 text-sm"
-            style={{
-              backgroundColor: mensaje.type === 'success' ? '#f0fdf4' : '#fef2f2',
-              color: mensaje.type === 'success' ? '#166534' : '#dc2626',
-              border: `1px solid ${mensaje.type === 'success' ? '#86efac' : '#fecaca'}`,
-            }}>
+            style={{ backgroundColor: mensaje.type === 'success' ? '#f0fdf4' : '#fef2f2', color: mensaje.type === 'success' ? '#166534' : '#dc2626', border: `1px solid ${mensaje.type === 'success' ? '#86efac' : '#fecaca'}` }}>
             <CheckCircle size={16} /> {mensaje.text}
           </div>
         )}
-
         {loading ? (
           <div className="space-y-4">
             {[1,2].map(i => (
               <div key={i} className="bg-white rounded-2xl p-4 animate-pulse flex gap-4" style={{ height: '96px' }}>
                 <div style={{ width: '80px', height: '80px', backgroundColor: '#e5e7eb', borderRadius: '12px' }} />
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-2 pt-2">
                   <div style={{ height: '16px', backgroundColor: '#e5e7eb', borderRadius: '6px', width: '60%' }} />
                   <div style={{ height: '14px', backgroundColor: '#e5e7eb', borderRadius: '6px', width: '30%' }} />
                 </div>
@@ -125,8 +115,7 @@ export default function Carrito() {
             {items.map((item) => (
               <div key={item.id_item} className="bg-white border rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow"
                 style={{ borderColor: '#e5e7eb' }}>
-                <div className="w-20 h-20 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
-                  style={{ backgroundColor: '#f8faff' }}>
+                <div className="w-20 h-20 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: '#f8faff' }}>
                   {item.producto.imagen ? (
                     <img src={item.producto.imagen} alt={item.producto.nombre} className="w-full h-full object-cover" />
                   ) : <Package size={32} style={{ color: '#d1d5db' }} />}
@@ -152,7 +141,6 @@ export default function Carrito() {
                 </button>
               </div>
             ))}
-
             <div className="bg-white border rounded-3xl p-6 mt-4 shadow-sm" style={{ borderColor: '#e5e7eb' }}>
               <div className="flex justify-between items-center mb-4">
                 <span className="text-base font-semibold" style={{ color: '#6b7280' }}>Total a pagar</span>
@@ -160,11 +148,7 @@ export default function Carrito() {
               </div>
               <button onClick={realizarPedido} disabled={procesando}
                 className="w-full py-3 rounded-xl font-bold text-sm transition-all"
-                style={{
-                  backgroundColor: procesando ? '#6b7280' : '#1a1f6e', color: 'white',
-                  cursor: procesando ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 15px rgba(26,31,110,0.3)',
-                }}>
+                style={{ backgroundColor: procesando ? '#6b7280' : '#1a1f6e', color: 'white', cursor: procesando ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(26,31,110,0.3)' }}>
                 {procesando ? 'Procesando pedido...' : 'Confirmar Pedido'}
               </button>
             </div>

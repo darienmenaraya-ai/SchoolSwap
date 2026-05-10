@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ImagePlus, Package } from 'lucide-react'
+import { ArrowLeft, ImagePlus } from 'lucide-react'
 import { sanitizeText, validatePrice, validateStock } from '@/lib/security'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -38,14 +38,8 @@ export default function NuevoProducto() {
   function handleImagenChange(e) {
     const file = e.target.files[0]
     if (!file) return
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      setError('Solo se permiten imágenes JPG, PNG, WEBP o GIF')
-      return
-    }
-    if (file.size > MAX_SIZE) {
-      setError('La imagen no puede superar los 5MB')
-      return
-    }
+    if (!ALLOWED_TYPES.includes(file.type)) { setError('Solo se permiten imágenes JPG, PNG, WEBP o GIF'); return }
+    if (file.size > MAX_SIZE) { setError('La imagen no puede superar los 5MB'); return }
     setImagenFile(file)
     setImagenPreview(URL.createObjectURL(file))
     setError('')
@@ -67,23 +61,19 @@ export default function NuevoProducto() {
     if (!validate()) return
     setLoading(true)
     setError('')
-
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
-
     let imagenUrl = ''
     if (imagenFile) {
       const ext = imagenFile.name.split('.').pop().toLowerCase()
       const nombre = `${user.id}-${Date.now()}.${ext}`
       const { error: uploadError } = await supabase.storage.from('productos').upload(nombre, imagenFile, {
-        contentType: imagenFile.type,
-        upsert: false,
+        contentType: imagenFile.type, upsert: false,
       })
       if (uploadError) { setError('Error al subir la imagen. Intentá de nuevo.'); setLoading(false); return }
       const { data: urlData } = supabase.storage.from('productos').getPublicUrl(nombre)
       imagenUrl = urlData.publicUrl
     }
-
     const { error: dbError } = await supabase.from('producto').insert({
       nombre: sanitizeText(form.nombre),
       descripcion: sanitizeText(form.descripcion),
@@ -94,7 +84,6 @@ export default function NuevoProducto() {
       id_usuario: user.id,
       estado: 'publicado',
     })
-
     if (dbError) { setError('Error al publicar. Intentá de nuevo.'); setLoading(false); return }
     router.push('/')
   }
@@ -107,10 +96,10 @@ export default function NuevoProducto() {
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#f0f4ff' }}>
       <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <Link href="/">
-            <div className="bg-white rounded-xl px-4 py-2 shadow-md">
-              <img src="/logo.png" alt="SchoolSwap" style={{ height: '48px', width: 'auto', display: 'block' }} />
+            <div className="bg-white rounded-xl px-3 py-1 shadow-md">
+              <img src="/logo.png" alt="SchoolSwap" style={{ height: '80px', width: 'auto', display: 'block' }} />
             </div>
           </Link>
           <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80 transition-opacity">
@@ -118,18 +107,13 @@ export default function NuevoProducto() {
           </Link>
         </div>
       </nav>
-
       <div className="max-w-2xl mx-auto px-4 py-10">
         <div className="bg-white rounded-3xl shadow-xl p-8 border" style={{ borderColor: '#e5e7eb' }}>
           <h1 className="text-2xl font-bold mb-1" style={{ color: '#1a1f6e' }}>Publicar Producto</h1>
           <p className="text-sm mb-6" style={{ color: '#6b7280' }}>Completá los datos de tu producto</p>
-
           {error && (
-            <div className="p-3 rounded-xl mb-4 text-sm" style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
-              {error}
-            </div>
+            <div className="p-3 rounded-xl mb-4 text-sm" style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>{error}</div>
           )}
-
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             <div>
               <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Nombre del producto</label>
@@ -138,7 +122,6 @@ export default function NuevoProducto() {
                 placeholder="Ej: Calculadora científica Casio" maxLength={100} />
               {fieldErrors.nombre && <p className="text-xs mt-1" style={{ color: '#dc2626' }}>{fieldErrors.nombre}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Descripción</label>
               <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows={4}
@@ -146,7 +129,6 @@ export default function NuevoProducto() {
                 placeholder="Describí el estado y características de tu producto..." maxLength={500} />
               {fieldErrors.descripcion && <p className="text-xs mt-1" style={{ color: '#dc2626' }}>{fieldErrors.descripcion}</p>}
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Precio (₡)</label>
@@ -163,7 +145,6 @@ export default function NuevoProducto() {
                 {fieldErrors.stock && <p className="text-xs mt-1" style={{ color: '#dc2626' }}>{fieldErrors.stock}</p>}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Categoría</label>
               <select name="id_categoria" value={form.id_categoria} onChange={handleChange}
@@ -175,7 +156,6 @@ export default function NuevoProducto() {
               </select>
               {fieldErrors.id_categoria && <p className="text-xs mt-1" style={{ color: '#dc2626' }}>{fieldErrors.id_categoria}</p>}
             </div>
-
             <div>
               <label className="block text-sm font-semibold mb-1.5" style={{ color: '#374151' }}>Imagen del producto</label>
               <div className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
@@ -197,14 +177,9 @@ export default function NuevoProducto() {
               <input id="imagen-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handleImagenChange} className="hidden" />
             </div>
-
             <button type="submit" disabled={loading}
               className="w-full py-3 rounded-xl font-bold text-sm transition-all"
-              style={{
-                backgroundColor: loading ? '#6b7280' : '#1a1f6e', color: 'white',
-                boxShadow: '0 4px 15px rgba(26,31,110,0.3)',
-                cursor: loading ? 'not-allowed' : 'pointer',
-              }}>
+              style={{ backgroundColor: loading ? '#6b7280' : '#1a1f6e', color: 'white', boxShadow: '0 4px 15px rgba(26,31,110,0.3)', cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'Publicando...' : 'Publicar Producto'}
             </button>
           </form>
