@@ -155,30 +155,65 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section style={{ background: 'linear-gradient(135deg, #1a1f6e 0%, #3b4fd8 60%, #5b6ef5 100%)' }} className="px-4 sm:px-6 py-16 sm:py-24">
+      <section
+        style={{
+          backgroundImage: 'url(/colegio.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          minHeight: '520px',
+        }}
+        className="px-4 sm:px-6 py-16 sm:py-24 flex items-center justify-center"
+      >
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-block bg-white rounded-2xl px-8 py-4 shadow-xl mb-8">
-            <img src="/logo.png" alt="SchoolSwap" style={{ height: '100px', width: 'auto' }} />
+
+          {/* LOGO EN CUADRO BLANCO GRANDE */}
+          <div
+            className="inline-flex items-center justify-center mb-8 shadow-2xl"
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '20px',
+              padding: '24px 48px',
+              width: '420px',
+              maxWidth: '90vw',
+            }}
+          >
+            <img
+              src="/logo.png"
+              alt="SchoolSwap"
+              style={{
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+              }}
+            />
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">
+
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 leading-tight"
+            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>
             El marketplace de<br />
-            <span style={{ color: '#a5b4fc' }}>CEDES Don Bosco</span>
+            <span style={{ color: '#a5b4fc' }}>Cedes Don Bosco</span>
           </h1>
-          <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto" style={{ color: '#c7d2fe' }}>
-            Compra, vende y intercambia útiles, libros, uniformes y más con tus compañeros.
+          <p className="text-base sm:text-lg mb-8 max-w-xl mx-auto font-medium"
+            style={{ color: 'white', textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>
+            Comprá, vendé e intercambiá útiles, libros, uniformes y más con tus compañeros.
           </p>
           {!usuario ? (
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/auth/registro" className="px-8 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 shadow-lg"
+              <Link href="/auth/registro"
+                className="px-8 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 shadow-lg"
                 style={{ backgroundColor: 'white', color: '#1a1f6e' }}>
                 Empezar gratis
               </Link>
-              <Link href="/auth/login" className="px-8 py-3 rounded-xl font-bold text-base transition-all border-2 border-white text-white hover:bg-white hover:text-blue-900">
+              <Link href="/auth/login"
+                className="px-8 py-3 rounded-xl font-bold text-base transition-all border-2 border-white text-white"
+                style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                 Iniciar sesión
               </Link>
             </div>
           ) : (
-            <Link href="/productos/nuevo" className="inline-flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 shadow-lg"
+            <Link href="/productos/nuevo"
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 shadow-lg"
               style={{ backgroundColor: 'white', color: '#1a1f6e' }}>
               <Plus size={18} /> Publicar producto
             </Link>
@@ -212,11 +247,11 @@ export default function Home() {
             <input type="text" value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar productos..."
               className="w-full rounded-xl pl-11 pr-4 py-3 text-sm border-2 outline-none transition-all"
-              style={{ backgroundColor: 'white', borderColor: '#e5e7eb', color: '#111827', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} />
+              style={{ backgroundColor: 'white', borderColor: '#e5e7eb', color: '#111827' }} />
           </div>
           <select value={categoriaSeleccionada} onChange={(e) => setCategoriaSeleccionada(e.target.value)}
             className="rounded-xl px-4 py-3 text-sm border-2 outline-none sm:w-52"
-            style={{ backgroundColor: 'white', borderColor: '#e5e7eb', color: '#111827', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            style={{ backgroundColor: 'white', borderColor: '#e5e7eb', color: '#111827' }}>
             <option value="">Todas las categorías</option>
             {categorias.map((cat) => (
               <option key={cat.id_categoria} value={cat.id_categoria}>{cat.nombre}</option>
