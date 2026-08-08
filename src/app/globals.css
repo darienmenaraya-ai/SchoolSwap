@@ -1,22 +1,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* MODO CLARO (default) */
+:root,
+[data-tema="claro"] {
+  --bg-principal: #f0f4ff;
+  --bg-card: #ffffff;
+  --bg-nav: #1a1f6e;
+  --bg-input: #fafafa;
+  --bg-hover: #f3f4f6;
+  --texto-principal: #111827;
+  --texto-suave: #6b7280;
+  --texto-nav: #ffffff;
+  --borde: #e5e7eb;
+  --borde-input: #e5e7eb;
+  --azul: #1a1f6e;
+  --azul-medio: #3b4fd8;
+  --azul-claro: #e8eaff;
+  --sombra: rgba(0,0,0,0.06);
+}
+
+/* MODO OSCURO */
+[data-tema="oscuro"] {
+  --bg-principal: #0f1117;
+  --bg-card: #1a1d2e;
+  --bg-nav: #0d1035;
+  --bg-input: #1e2235;
+  --bg-hover: #252840;
+  --texto-principal: #f1f5f9;
+  --texto-suave: #94a3b8;
+  --texto-nav: #ffffff;
+  --borde: #2d3158;
+  --borde-input: #2d3158;
+  --azul: #4f6ef7;
+  --azul-medio: #6b7ff5;
+  --azul-claro: #1e2560;
+  --sombra: rgba(0,0,0,0.3);
+}
+
 html, body {
-  background-color: #f0f4ff;
-  color: #1a1f6e;
+  background-color: var(--bg-principal);
+  color: var(--texto-principal);
   font-family: 'Poppins', sans-serif;
   margin: 0;
   padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
   box-sizing: border-box;
 }
 
-input, textarea, select {
-  font-family: 'Poppins', sans-serif;
-}
-
-button {
+input, textarea, select, button {
   font-family: 'Poppins', sans-serif;
 }

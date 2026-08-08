@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Users, Package, ShoppingCart, BarChart3 } from 'lucide-react'
+import { ArrowLeft, Users, Package, ShoppingCart, BarChart3, Sun, Moon, Globe } from 'lucide-react'
+import { useApp } from '@/lib/context'
 
 export default function Admin() {
   const router = useRouter()
+  const { t, cambiarIdioma, cambiarTema, idioma, tema } = useApp()
   const [loading, setLoading] = useState(true)
   const [seccion, setSeccion] = useState('estadisticas')
   const [stats, setStats] = useState({})
@@ -53,7 +55,7 @@ export default function Admin() {
   }
 
   async function eliminarProducto(id_producto) {
-    if (!confirm('¿Estás seguro que querés eliminar este producto?')) return
+    if (!confirm(idioma === 'es' ? '¿Estás seguro que querés eliminar este producto?' : 'Are you sure you want to delete this product?')) return
     await supabase.from('producto').delete().eq('id_producto', id_producto)
     setProductos(productos.filter(p => p.id_producto !== id_producto))
   }
@@ -74,101 +76,139 @@ export default function Admin() {
   }
 
   if (loading) return (
-    <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f0f4ff' }}>
-      <p style={{ color: '#6b7280' }}>Verificando acceso...</p>
+    <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-principal)' }}>
+      <p style={{ color: 'var(--texto-suave)' }}>{t('admin', 'verifying')}</p>
     </main>
   )
 
   const tabs = [
-    { id: 'estadisticas', label: 'Estadísticas', icon: <BarChart3 size={15} /> },
-    { id: 'usuarios', label: 'Usuarios', icon: <Users size={15} /> },
-    { id: 'productos', label: 'Productos', icon: <Package size={15} /> },
-    { id: 'pedidos', label: 'Pedidos', icon: <ShoppingCart size={15} /> },
+    { id: 'estadisticas', label: t('admin', 'stats'), icon: <BarChart3 size={15} /> },
+    { id: 'usuarios', label: t('admin', 'users'), icon: <Users size={15} /> },
+    { id: 'productos', label: t('admin', 'products'), icon: <Package size={15} /> },
+    { id: 'pedidos', label: t('admin', 'orders'), icon: <ShoppingCart size={15} /> },
   ]
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: '#f0f4ff' }}>
-      <nav style={{ backgroundColor: '#1a1f6e', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
+    <main style={{ backgroundColor: 'var(--bg-principal)', minHeight: '100vh' }}>
+      <nav style={{ backgroundColor: 'var(--bg-nav)', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between">
           <Link href="/">
             <div className="bg-white rounded-xl px-3 py-1 shadow-md">
               <img src="/logo.png" alt="SchoolSwap" style={{ height: '80px', width: 'auto', display: 'block' }} />
             </div>
           </Link>
-          <span className="text-sm font-bold" style={{ color: '#a5b4fc' }}>Panel de Administrador</span>
-          <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80">
-            <ArrowLeft size={16} /> Volver
-          </Link>
+          <span className="text-sm font-bold hidden md:block" style={{ color: '#a5b4fc' }}>
+            {t('admin', 'panel')}
+          </span>
+          <div className="flex items-center gap-2">
+            <button onClick={cambiarIdioma}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-white text-xs font-bold border border-white border-opacity-30">
+              <Globe size={13} /> {idioma === 'es' ? 'EN' : 'ES'}
+            </button>
+            <button onClick={cambiarTema}
+              className="p-1.5 rounded-lg text-white border border-white border-opacity-30">
+              {tema === 'claro' ? <Moon size={15} /> : <Sun size={15} />}
+            </button>
+            <Link href="/" className="flex items-center gap-2 text-sm font-medium text-white hover:opacity-80">
+              <ArrowLeft size={16} /> {t('common', 'back')}
+            </Link>
+          </div>
         </div>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex gap-2 mb-8 bg-white p-1 rounded-xl w-fit shadow-sm border" style={{ borderColor: '#e5e7eb' }}>
+
+        {/* TABS */}
+        <div className="flex gap-2 mb-8 p-1 rounded-xl w-fit shadow-sm border"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
           {tabs.map((tab) => (
             <button key={tab.id} onClick={() => setSeccion(tab.id)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all"
-              style={{ backgroundColor: seccion === tab.id ? '#1a1f6e' : 'transparent', color: seccion === tab.id ? 'white' : '#6b7280' }}>
+              style={{
+                backgroundColor: seccion === tab.id ? 'var(--azul)' : 'transparent',
+                color: seccion === tab.id ? 'white' : 'var(--texto-suave)'
+              }}>
               {tab.icon} {tab.label}
             </button>
           ))}
         </div>
 
+        {/* ESTADÍSTICAS */}
         {seccion === 'estadisticas' && (
           <div>
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#1a1f6e' }}>Estadísticas generales</h2>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--azul)' }}>
+              {t('admin', 'generalStats')}
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { label: 'Usuarios registrados', value: stats.totalUsuarios, icon: <Users size={24} /> },
-                { label: 'Productos publicados', value: stats.totalProductos, icon: <Package size={24} /> },
-                { label: 'Pedidos realizados', value: stats.totalPedidos, icon: <ShoppingCart size={24} /> },
-                { label: 'Total en ventas', value: `₡${Number(stats.totalVentas).toLocaleString()}`, icon: <BarChart3 size={24} /> },
+                { label: t('admin', 'registeredUsers'), value: stats.totalUsuarios, icon: <Users size={24} /> },
+                { label: t('admin', 'publishedProducts'), value: stats.totalProductos, icon: <Package size={24} /> },
+                { label: t('admin', 'totalOrders'), value: stats.totalPedidos, icon: <ShoppingCart size={24} /> },
+                { label: t('admin', 'totalSales'), value: `₡${Number(stats.totalVentas).toLocaleString()}`, icon: <BarChart3 size={24} /> },
               ].map((stat) => (
-                <div key={stat.label} className="bg-white border rounded-2xl p-6 shadow-sm" style={{ borderColor: '#e5e7eb' }}>
-                  <div className="mb-3" style={{ color: '#3b4fd8' }}>{stat.icon}</div>
-                  <p className="text-3xl font-extrabold" style={{ color: '#1a1f6e' }}>{stat.value}</p>
-                  <p className="text-sm mt-1" style={{ color: '#6b7280' }}>{stat.label}</p>
+                <div key={stat.label} className="border rounded-2xl p-6 shadow-sm"
+                  style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+                  <div className="mb-3" style={{ color: 'var(--azul-medio)' }}>{stat.icon}</div>
+                  <p className="text-3xl font-extrabold" style={{ color: 'var(--azul)' }}>{stat.value}</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--texto-suave)' }}>{stat.label}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {/* USUARIOS */}
         {seccion === 'usuarios' && (
           <div>
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#1a1f6e' }}>Usuarios ({usuarios.length})</h2>
-            <div className="bg-white border rounded-2xl overflow-hidden shadow-sm" style={{ borderColor: '#e5e7eb' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--azul)' }}>
+              {t('admin', 'users')} ({usuarios.length})
+            </h2>
+            <div className="border rounded-2xl overflow-hidden shadow-sm"
+              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead style={{ backgroundColor: '#fafbff' }}>
-                    <tr className="text-sm border-b" style={{ borderColor: '#e5e7eb', color: '#6b7280' }}>
-                      <th className="text-left p-4 font-bold">Nombre</th>
-                      <th className="text-left p-4 font-bold">Correo</th>
-                      <th className="text-left p-4 font-bold">Rol</th>
-                      <th className="text-left p-4 font-bold">Estado</th>
-                      <th className="text-left p-4 font-bold">Registro</th>
-                      <th className="text-left p-4 font-bold">Acción</th>
+                  <thead style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#fafbff' }}>
+                    <tr className="text-sm border-b" style={{ borderColor: 'var(--borde)', color: 'var(--texto-suave)' }}>
+                      {[
+                        t('admin', 'name'), t('admin', 'email'), t('admin', 'role'),
+                        t('admin', 'status'), t('admin', 'registration'), t('admin', 'action')
+                      ].map(h => (
+                        <th key={h} className="text-left p-4 font-bold">{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {usuarios.map((u) => (
-                      <tr key={u.id_usuario} className="border-b hover:bg-gray-50 transition-colors" style={{ borderColor: '#f3f4f6' }}>
-                        <td className="p-4 font-bold text-sm" style={{ color: '#1a1f6e' }}>{u.nombre} {u.apellido}</td>
-                        <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{u.correo}</td>
+                      <tr key={u.id_usuario} className="border-b transition-colors"
+                        style={{ borderColor: 'var(--borde)' }}>
+                        <td className="p-4 font-bold text-sm" style={{ color: 'var(--azul)' }}>
+                          {u.nombre} {u.apellido}
+                        </td>
+                        <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>{u.correo}</td>
                         <td className="p-4">
-                          <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: '#e8eaff', color: '#3b4fd8' }}>{u.rol}</span>
+                          <span className="text-xs font-bold px-2 py-1 rounded-full"
+                            style={{ backgroundColor: 'var(--azul-claro)', color: 'var(--azul-medio)' }}>
+                            {u.rol}
+                          </span>
                         </td>
                         <td className="p-4">
                           <span className="text-xs font-bold px-2 py-1 rounded-full border"
-                            style={u.activo ? { backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#166534' } : { backgroundColor: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}>
-                            {u.activo ? 'Activo' : 'Inactivo'}
+                            style={u.activo
+                              ? { backgroundColor: '#f0fdf4', borderColor: '#86efac', color: '#166534' }
+                              : { backgroundColor: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}>
+                            {u.activo ? t('admin', 'active') : t('admin', 'inactive')}
                           </span>
                         </td>
-                        <td className="p-4 text-sm" style={{ color: '#9ca3af' }}>{new Date(u.created_at).toLocaleDateString('es-CR')}</td>
+                        <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>
+                          {new Date(u.created_at).toLocaleDateString(idioma === 'es' ? 'es-CR' : 'en-US')}
+                        </td>
                         <td className="p-4">
                           <button onClick={() => toggleUsuario(u.id_usuario, u.activo)}
                             className="text-xs px-3 py-1.5 rounded-lg font-bold transition-all border"
-                            style={u.activo ? { borderColor: '#fca5a5', color: '#dc2626', backgroundColor: 'white' } : { borderColor: '#86efac', color: '#166534', backgroundColor: 'white' }}>
-                            {u.activo ? 'Desactivar' : 'Activar'}
+                            style={u.activo
+                              ? { borderColor: '#fca5a5', color: '#dc2626', backgroundColor: 'var(--bg-card)' }
+                              : { borderColor: '#86efac', color: '#166534', backgroundColor: 'var(--bg-card)' }}>
+                            {u.activo ? t('admin', 'deactivate') : t('admin', 'activate')}
                           </button>
                         </td>
                       </tr>
@@ -180,42 +220,52 @@ export default function Admin() {
           </div>
         )}
 
+        {/* PRODUCTOS */}
         {seccion === 'productos' && (
           <div>
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#1a1f6e' }}>Productos ({productos.length})</h2>
-            <div className="bg-white border rounded-2xl overflow-hidden shadow-sm" style={{ borderColor: '#e5e7eb' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--azul)' }}>
+              {t('admin', 'products')} ({productos.length})
+            </h2>
+            <div className="border rounded-2xl overflow-hidden shadow-sm"
+              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead style={{ backgroundColor: '#fafbff' }}>
-                    <tr className="text-sm border-b" style={{ borderColor: '#e5e7eb', color: '#6b7280' }}>
-                      <th className="text-left p-4 font-bold">Producto</th>
-                      <th className="text-left p-4 font-bold">Categoría</th>
-                      <th className="text-left p-4 font-bold">Vendedor</th>
-                      <th className="text-left p-4 font-bold">Precio</th>
-                      <th className="text-left p-4 font-bold">Stock</th>
-                      <th className="text-left p-4 font-bold">Estado</th>
-                      <th className="text-left p-4 font-bold">Acción</th>
+                  <thead style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#fafbff' }}>
+                    <tr className="text-sm border-b" style={{ borderColor: 'var(--borde)', color: 'var(--texto-suave)' }}>
+                      {[
+                        t('admin', 'name'), t('admin', 'role'), t('admin', 'seller'),
+                        t('product', 'price'), t('product', 'stock'), t('admin', 'status'), t('admin', 'action')
+                      ].map(h => (
+                        <th key={h} className="text-left p-4 font-bold">{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {productos.map((p) => (
-                      <tr key={p.id_producto} className="border-b hover:bg-gray-50 transition-colors" style={{ borderColor: '#f3f4f6' }}>
-                        <td className="p-4 font-bold text-sm" style={{ color: '#1a1f6e' }}>{p.nombre}</td>
-                        <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{p.categoria?.nombre}</td>
-                        <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{p.usuario?.nombre} {p.usuario?.apellido}</td>
-                        <td className="p-4 font-bold text-sm" style={{ color: '#3b4fd8' }}>₡{Number(p.precio).toLocaleString()}</td>
-                        <td className="p-4 text-sm" style={{ color: '#6b7280' }}>{p.stock}</td>
+                      <tr key={p.id_producto} className="border-b transition-colors"
+                        style={{ borderColor: 'var(--borde)' }}>
+                        <td className="p-4 font-bold text-sm" style={{ color: 'var(--azul)' }}>{p.nombre}</td>
+                        <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>{p.categoria?.nombre}</td>
+                        <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>
+                          {p.usuario?.nombre} {p.usuario?.apellido}
+                        </td>
+                        <td className="p-4 font-bold text-sm" style={{ color: 'var(--azul-medio)' }}>
+                          ₡{Number(p.precio).toLocaleString()}
+                        </td>
+                        <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>{p.stock}</td>
                         <td className="p-4">
                           <span className="text-xs font-bold px-2 py-1 rounded-full"
-                            style={p.estado === 'publicado' ? { backgroundColor: '#f0fdf4', color: '#166534' } : { backgroundColor: '#fef2f2', color: '#dc2626' }}>
+                            style={p.estado === 'publicado'
+                              ? { backgroundColor: '#f0fdf4', color: '#166534' }
+                              : { backgroundColor: '#fef2f2', color: '#dc2626' }}>
                             {p.estado}
                           </span>
                         </td>
                         <td className="p-4">
                           <button onClick={() => eliminarProducto(p.id_producto)}
                             className="text-xs px-3 py-1.5 rounded-lg font-bold border transition-all"
-                            style={{ borderColor: '#fca5a5', color: '#dc2626', backgroundColor: 'white' }}>
-                            Eliminar
+                            style={{ borderColor: '#fca5a5', color: '#dc2626', backgroundColor: 'var(--bg-card)' }}>
+                            {t('admin', 'delete')}
                           </button>
                         </td>
                       </tr>
@@ -227,40 +277,61 @@ export default function Admin() {
           </div>
         )}
 
+        {/* PEDIDOS */}
         {seccion === 'pedidos' && (
           <div>
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#1a1f6e' }}>Pedidos ({pedidos.length})</h2>
-            <div className="bg-white border rounded-2xl overflow-hidden shadow-sm" style={{ borderColor: '#e5e7eb' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--azul)' }}>
+              {t('admin', 'orders')} ({pedidos.length})
+            </h2>
+            <div className="border rounded-2xl overflow-hidden shadow-sm"
+              style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead style={{ backgroundColor: '#fafbff' }}>
-                    <tr className="text-sm border-b" style={{ borderColor: '#e5e7eb', color: '#6b7280' }}>
-                      <th className="text-left p-4 font-bold">ID</th>
-                      <th className="text-left p-4 font-bold">Cliente</th>
-                      <th className="text-left p-4 font-bold">Total</th>
-                      <th className="text-left p-4 font-bold">Fecha</th>
-                      <th className="text-left p-4 font-bold">Estado</th>
-                      <th className="text-left p-4 font-bold">Cambiar</th>
+                  <thead style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#fafbff' }}>
+                    <tr className="text-sm border-b" style={{ borderColor: 'var(--borde)', color: 'var(--texto-suave)' }}>
+                      {[
+                        'ID', t('admin', 'name'), t('cart', 'total'),
+                        t('admin', 'registration'), t('admin', 'status'), t('admin', 'changeStatus')
+                      ].map(h => (
+                        <th key={h} className="text-left p-4 font-bold">{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {pedidos.map((p) => (
-                      <tr key={p.id_pedido} className="border-b hover:bg-gray-50 transition-colors" style={{ borderColor: '#f3f4f6' }}>
-                        <td className="p-4 text-xs font-mono font-bold" style={{ color: '#3b4fd8' }}>#{p.id_pedido.slice(0, 8).toUpperCase()}</td>
-                        <td className="p-4 font-bold text-sm" style={{ color: '#1a1f6e' }}>{p.usuario?.nombre} {p.usuario?.apellido}</td>
-                        <td className="p-4 font-bold text-sm" style={{ color: '#3b4fd8' }}>₡{Number(p.precio_total).toLocaleString()}</td>
-                        <td className="p-4 text-sm" style={{ color: '#9ca3af' }}>{new Date(p.created_at).toLocaleDateString('es-CR')}</td>
-                        <td className="p-4">
-                          <span className="text-xs font-bold px-2 py-1 rounded-full border" style={getEstadoStyle(p.estado)}>{p.estado}</span>
+                      <tr key={p.id_pedido} className="border-b transition-colors"
+                        style={{ borderColor: 'var(--borde)' }}>
+                        <td className="p-4 text-xs font-mono font-bold" style={{ color: 'var(--azul-medio)' }}>
+                          #{p.id_pedido.slice(0, 8).toUpperCase()}
+                        </td>
+                        <td className="p-4 font-bold text-sm" style={{ color: 'var(--azul)' }}>
+                          {p.usuario?.nombre} {p.usuario?.apellido}
+                        </td>
+                        <td className="p-4 font-bold text-sm" style={{ color: 'var(--azul-medio)' }}>
+                          ₡{Number(p.precio_total).toLocaleString()}
+                        </td>
+                        <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>
+                          {new Date(p.created_at).toLocaleDateString(idioma === 'es' ? 'es-CR' : 'en-US')}
                         </td>
                         <td className="p-4">
-                          <select value={p.estado} onChange={(e) => cambiarEstadoPedido(p.id_pedido, e.target.value)}
+                          <span className="text-xs font-bold px-2 py-1 rounded-full border"
+                            style={getEstadoStyle(p.estado)}>
+                            {p.estado}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <select value={p.estado}
+                            onChange={(e) => cambiarEstadoPedido(p.id_pedido, e.target.value)}
                             className="text-xs rounded-lg px-2 py-1.5 border-2 outline-none"
-                            style={{ borderColor: '#e5e7eb', color: '#1a1f6e', backgroundColor: 'white' }}>
-                            <option value="pendiente">Pendiente</option>
-                            <option value="procesando">Procesando</option>
-                            <option value="completado">Completado</option>
-                            <option value="cancelado">Cancelado</option>
+                            style={{
+                              borderColor: 'var(--borde)',
+                              color: 'var(--texto-principal)',
+                              backgroundColor: 'var(--bg-card)'
+                            }}>
+                            <option value="pendiente">{t('orders', 'pending')}</option>
+                            <option value="procesando">{t('orders', 'processing')}</option>
+                            <option value="completado">{t('orders', 'completed')}</option>
+                            <option value="cancelado">{t('orders', 'cancelled')}</option>
                           </select>
                         </td>
                       </tr>
