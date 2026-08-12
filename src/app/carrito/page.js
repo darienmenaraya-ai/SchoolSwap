@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Package, ShoppingCart, Trash2, CheckCircle, Sun, Moon, Globe } from 'lucide-react'
 import { useApp } from '@/lib/context'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 export default function Carrito() {
   const router = useRouter()
-  const { t, cambiarIdioma, cambiarTema, idioma, tema } = useApp()
+  const { t, cambiarIdioma, cambiarTema, idioma, tema, mostrarToast } = useApp()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [procesando, setProcesando] = useState(false)
@@ -35,6 +36,11 @@ export default function Carrito() {
 
   async function actualizarCantidad(id_item, nueva_cantidad) {
     if (nueva_cantidad < 1) return
+    const item = items.find(i => i.id_item === id_item)
+    if (!item || nueva_cantidad > item.producto.stock) {
+      setMensaje({ text: idioma === 'es' ? 'No hay suficiente stock disponible.' : 'There is not enough stock available.', type: 'error' })
+      return
+    }
     await supabase.from('carrito_item').update({ cantidad: nueva_cantidad }).eq('id_item', id_item)
     setItems(items.map(i => i.id_item === id_item ? { ...i, cantidad: nueva_cantidad } : i))
   }
@@ -43,17 +49,15 @@ export default function Carrito() {
     setProcesando(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
-    const total = items.reduce((acc, item) => acc + (item.cantidad * item.producto.precio), 0)
-    const { data: pedido, error: pedidoError } = await supabase.from('pedido').insert({ id_usuario: user.id, precio_total: total, estado: 'pendiente' }).select().single()
-    if (pedidoError) { setMensaje({ text: t('cart', 'error'), type: 'error' }); setProcesando(false); return }
-    for (const item of items) {
-      const { error: detalleError } = await supabase.from('detalle_pedido').insert({ id_pedido: pedido.id_pedido, id_producto: item.producto.id_producto, cantidad: item.cantidad, precio_unitario: item.producto.precio })
-      if (detalleError) { setMensaje({ text: t('cart', 'error'), type: 'error' }); setProcesando(false); return }
+    const { error: pedidoError } = await supabase.rpc('confirmar_pedido_actual')
+    if (pedidoError) {
+      setMensaje({ text: idioma === 'es' ? 'No se pudo confirmar el pedido. Verificá el stock e intentá de nuevo.' : 'Unable to confirm the order. Check stock and try again.', type: 'error' })
+      setProcesando(false)
+      return
     }
-    const { data: carrito } = await supabase.from('carrito').select('*').eq('id_usuario', user.id).single()
-    await supabase.from('carrito_item').delete().eq('id_carrito', carrito.id_carrito)
     setItems([])
     setMensaje({ text: t('cart', 'success'), type: 'success' })
+    mostrarToast(t('cart', 'success'))
     setTimeout(() => router.push('/pedidos'), 2000)
     setProcesando(false)
   }
@@ -91,7 +95,7 @@ export default function Carrito() {
         ) : (
           <div className="space-y-3">
             {items.map((item) => (
-              <div key={item.id_item} className="border rounded-2xl p-4 flex items-center gap-4 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+              <div key={item.id_item} className="border rounded-2xl p-4 grid grid-cols-[80px_1fr] sm:flex sm:items-center gap-4 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
                 <div className="w-20 h-20 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#f8faff' }}>
                   {item.producto.imagen ? <img src={item.producto.imagen} alt={item.producto.nombre} className="w-full h-full object-cover" /> : <Package size={32} style={{ color: 'var(--borde)' }} />}
                 </div>
@@ -99,13 +103,12 @@ export default function Carrito() {
                   <h3 className="font-bold text-sm truncate" style={{ color: 'var(--texto-principal)' }}>{item.producto.nombre}</h3>
                   <p className="font-bold text-sm mt-0.5" style={{ color: 'var(--azul-medio)' }}>₡{Number(item.producto.precio).toLocaleString()}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 col-span-1 sm:col-auto">
                   <button onClick={() => actualizarCantidad(item.id_item, item.cantidad - 1)} className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg border-2" style={{ borderColor: 'var(--borde)', color: 'var(--texto-principal)', backgroundColor: 'var(--bg-card)' }}>−</button>
                   <span className="w-8 text-center font-bold text-sm" style={{ color: 'var(--texto-principal)' }}>{item.cantidad}</span>
                   <button onClick={() => actualizarCantidad(item.id_item, item.cantidad + 1)} className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg border-2" style={{ borderColor: 'var(--borde)', color: 'var(--texto-principal)', backgroundColor: 'var(--bg-card)' }}>+</button>
                 </div>
-                <p className="font-extrabold text-sm w-24 text-right" style={{ color: 'var(--azul)' }}>₡{Number(item.cantidad * item.producto.precio).toLocaleString()}</p>
-                <button onClick={() => eliminarItem(item.id_item)} className="p-2 rounded-lg hover:bg-red-50 transition-colors"><Trash2 size={16} style={{ color: 'var(--texto-suave)' }} /></button>
+                <div className="col-start-2 flex justify-end items-center gap-2 sm:contents"><p className="font-extrabold text-sm w-24 text-right" style={{ color: 'var(--azul)' }}>₡{Number(item.cantidad * item.producto.precio).toLocaleString()}</p><button onClick={() => eliminarItem(item.id_item)} className="p-2 rounded-lg hover:bg-red-50 transition-colors"><Trash2 size={16} style={{ color: 'var(--texto-suave)' }} /></button></div>
               </div>
             ))}
             <div className="border rounded-3xl p-6 mt-4 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
@@ -114,7 +117,7 @@ export default function Carrito() {
                 <span className="text-3xl font-extrabold" style={{ color: 'var(--azul)' }}>₡{Number(total).toLocaleString()}</span>
               </div>
               <button onClick={realizarPedido} disabled={procesando} className="w-full py-3 rounded-xl font-bold text-sm transition-all" style={{ backgroundColor: procesando ? '#6b7280' : 'var(--azul)', color: 'white', cursor: procesando ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(26,31,110,0.3)' }}>
-                {procesando ? t('cart', 'processing') : t('cart', 'confirm')}
+                {procesando ? <LoadingSpinner label={t('cart', 'processing')} size={16} /> : t('cart', 'confirm')}
               </button>
             </div>
           </div>

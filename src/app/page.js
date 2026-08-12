@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ShoppingCart, MessageCircle, Package, User, LogOut, Settings, Plus, Search, RefreshCw, ChevronDown, Sun, Moon, Globe } from 'lucide-react'
@@ -9,12 +9,12 @@ import { useApp } from '@/lib/context'
 export default function Home() {
   const { t, cambiarIdioma, cambiarTema, idioma, tema } = useApp()
   const [productos, setProductos] = useState([])
-  const [productosFiltrados, setProductosFiltrados] = useState([])
   const [usuario, setUsuario] = useState(null)
   const [esAdmin, setEsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('')
+  const [condicionSeleccionada, setCondicionSeleccionada] = useState('')
   const [categorias, setCategorias] = useState([])
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [precioMin, setPrecioMin] = useState('')
@@ -33,14 +33,13 @@ export default function Home() {
         .eq('estado', 'publicado').order('created_at', { ascending: false })
       const { data: cats } = await supabase.from('categoria').select('*').order('nombre')
       setProductos(prods || [])
-      setProductosFiltrados(prods || [])
       setCategorias(cats || [])
       setLoading(false)
     }
     cargarDatos()
   }, [])
 
-  useEffect(() => {
+  const productosFiltrados = useMemo(() => {
     let filtrados = [...productos]
     if (busqueda.trim()) {
       filtrados = filtrados.filter(p =>
@@ -50,6 +49,9 @@ export default function Home() {
     }
     if (categoriaSeleccionada) {
       filtrados = filtrados.filter(p => p.id_categoria === categoriaSeleccionada)
+    }
+    if (condicionSeleccionada) {
+      filtrados = filtrados.filter(p => p.condicion === condicionSeleccionada)
     }
     if (precioMin !== '') {
       filtrados = filtrados.filter(p => Number(p.precio) >= Number(precioMin))
@@ -64,8 +66,8 @@ export default function Home() {
     } else {
       filtrados.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     }
-    setProductosFiltrados(filtrados)
-  }, [busqueda, categoriaSeleccionada, precioMin, precioMax, ordenamiento, productos])
+    return filtrados
+  }, [busqueda, categoriaSeleccionada, condicionSeleccionada, precioMin, precioMax, ordenamiento, productos])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -74,7 +76,7 @@ export default function Home() {
     window.location.href = '/'
   }
 
-  const hayFiltros = busqueda || categoriaSeleccionada || precioMin || precioMax || ordenamiento !== 'recientes'
+  const hayFiltros = busqueda || categoriaSeleccionada || condicionSeleccionada || precioMin || precioMax || ordenamiento !== 'recientes'
 
   const estiloNav = { backgroundColor: 'var(--bg-nav)', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }
   const estiloCard = { backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }
@@ -277,6 +279,11 @@ export default function Home() {
                 <option key={cat.id_categoria} value={cat.id_categoria}>{cat.nombre}</option>
               ))}
             </select>
+            <select value={condicionSeleccionada} onChange={(e) => setCondicionSeleccionada(e.target.value)} className="rounded-xl px-4 py-3 text-sm border-2 outline-none sm:w-44" style={estiloInput}>
+              <option value="">{t('search', 'allConditions')}</option>
+              <option value="nuevo">{t('product', 'new')}</option>
+              <option value="usado">{t('product', 'used')}</option>
+            </select>
           </div>
 
           {/* FILTROS AVANZADOS */}
@@ -300,7 +307,7 @@ export default function Home() {
               <option value="precio_desc">{idioma === 'es' ? 'Precio: mayor a menor' : 'Price: high to low'}</option>
             </select>
             {hayFiltros && (
-              <button onClick={() => { setBusqueda(''); setCategoriaSeleccionada(''); setPrecioMin(''); setPrecioMax(''); setOrdenamiento('recientes') }}
+              <button onClick={() => { setBusqueda(''); setCategoriaSeleccionada(''); setCondicionSeleccionada(''); setPrecioMin(''); setPrecioMax(''); setOrdenamiento('recientes') }}
                 className="px-4 py-2.5 rounded-xl text-sm font-semibold border-2"
                 style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)', color: 'var(--texto-suave)' }}>
                 {t('search', 'clear')}
@@ -336,7 +343,7 @@ export default function Home() {
             <Search size={48} className="mx-auto mb-4" style={{ color: 'var(--borde)' }} />
             <p className="text-lg font-semibold" style={{ color: 'var(--texto-principal)' }}>{t('search', 'notFound')}</p>
             <p className="text-sm mt-1 mb-4" style={{ color: 'var(--texto-suave)' }}>{t('search', 'tryAgain')}</p>
-            <button onClick={() => { setBusqueda(''); setCategoriaSeleccionada(''); setPrecioMin(''); setPrecioMax(''); setOrdenamiento('recientes') }}
+            <button onClick={() => { setBusqueda(''); setCategoriaSeleccionada(''); setCondicionSeleccionada(''); setPrecioMin(''); setPrecioMax(''); setOrdenamiento('recientes') }}
               className="px-6 py-2 rounded-xl text-sm font-bold"
               style={{ backgroundColor: 'var(--azul)', color: 'white' }}>
               {t('search', 'seeAll')}
@@ -360,6 +367,11 @@ export default function Home() {
                       <span className="text-xs font-bold px-2 py-1 rounded-full"
                         style={{ backgroundColor: 'var(--azul-claro)', color: 'var(--azul-medio)' }}>
                         {producto.categoria?.nombre}
+                      </span>
+                    </div>
+                    <div className="absolute top-3 right-3">
+                      <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.92)', color: 'var(--azul)' }}>
+                        {producto.condicion === 'nuevo' ? t('product', 'new') : t('product', 'used')}
                       </span>
                     </div>
                   </div>

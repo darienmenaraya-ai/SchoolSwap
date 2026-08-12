@@ -18,9 +18,23 @@ export default function Registro() {
   const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
+  function validarCampo(nombre, valor, datos = form) {
+    const esEs = idioma === 'es'
+    if (nombre === 'nombre') return !validateName(valor) ? (esEs ? 'Nombre inválido (solo letras, 2-50 caracteres)' : 'Invalid name (letters only, 2-50 chars)') : ''
+    if (nombre === 'apellido') return !validateName(valor) ? (esEs ? 'Apellido inválido' : 'Invalid last name') : ''
+    if (nombre === 'correo') return !validateEmail(valor) ? (esEs ? 'Correo inválido' : 'Invalid email') : ''
+    if (nombre === 'contrasena') {
+      const errores = validatePassword(valor)
+      return errores.length ? errores.join(', ') : ''
+    }
+    if (nombre === 'confirmarContrasena') return valor !== datos.contrasena ? (esEs ? 'Las contraseñas no coinciden' : 'Passwords do not match') : ''
+    return ''
+  }
+
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value })
-    setFieldErrors(p => ({ ...p, [e.target.name]: '' }))
+    const siguiente = { ...form, [e.target.name]: e.target.value }
+    setForm(siguiente)
+    setFieldErrors(p => ({ ...p, [e.target.name]: validarCampo(e.target.name, e.target.value, siguiente), ...(e.target.name === 'contrasena' ? { confirmarContrasena: validarCampo('confirmarContrasena', siguiente.confirmarContrasena, siguiente) } : {}) }))
   }
 
   function validate() {
@@ -113,7 +127,7 @@ export default function Registro() {
           )}
 
           <form onSubmit={handleRegistro} className="space-y-4" noValidate>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--texto-principal)' }}>{t('auth', 'nameLabel')}</label>
                 <div className="relative">

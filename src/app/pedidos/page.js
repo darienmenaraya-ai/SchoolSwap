@@ -34,6 +34,34 @@ export default function Pedidos() {
     }
   }
 
+  function ProgresoPedido({ estado }) {
+    const pasos = [
+      { id: 'pendiente', label: t('orders', 'pending') },
+      { id: 'procesando', label: t('orders', 'processing') },
+      { id: 'completado', label: t('orders', 'completed') },
+    ]
+    const actual = estado === 'cancelado' ? -1 : pasos.findIndex(p => p.id === estado)
+    return (
+      <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--borde)' }}>
+        {estado === 'cancelado' ? (
+          <p className="text-xs font-semibold" style={{ color: '#dc2626' }}>{t('orders', 'cancelled')}</p>
+        ) : (
+          <div className="flex items-start">
+            {pasos.map((paso, index) => (
+              <div key={paso.id} className="flex-1 flex items-start last:flex-none">
+                <div className="flex flex-col items-center min-w-[54px]">
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: index <= actual ? 'var(--azul)' : 'var(--borde)', color: index <= actual ? 'white' : 'var(--texto-suave)' }}>{index + 1}</span>
+                  <span className="text-[10px] sm:text-xs text-center mt-1 leading-tight" style={{ color: index <= actual ? 'var(--azul)' : 'var(--texto-suave)' }}>{paso.label}</span>
+                </div>
+                {index < pasos.length - 1 && <span className="h-1 flex-1 mt-3 mx-1 rounded-full" style={{ backgroundColor: index < actual ? 'var(--azul)' : 'var(--borde)' }} />}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <main style={{ backgroundColor: 'var(--bg-principal)', minHeight: '100vh' }}>
       <nav style={{ backgroundColor: 'var(--bg-nav)', boxShadow: '0 2px 20px rgba(26,31,110,0.3)' }} className="sticky top-0 z-50">
@@ -86,6 +114,7 @@ export default function Pedidos() {
                         <p className="font-bold text-sm" style={{ color: 'var(--azul)' }}>₡{Number(detalle.cantidad * detalle.precio_unitario).toLocaleString()}</p>
                       </div>
                     ))}
+                    <ProgresoPedido estado={pedido.estado} />
                   </div>
                 </div>
               )

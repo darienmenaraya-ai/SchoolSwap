@@ -21,32 +21,6 @@ function MensajesContenido() {
   const [enviando, setEnviando] = useState(false)
   const mensajesEndRef = useRef(null)
 
-  useEffect(() => {
-    async function cargarDatos() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-      setUsuario(user)
-      const convs = await cargarConversaciones(user.id)
-      const usuarioParam = searchParams.get('usuario')
-      if (usuarioParam) {
-        const { data: otroUsuario } = await supabase.from('usuario').select('id_usuario, nombre, apellido').eq('id_usuario', usuarioParam).single()
-        if (otroUsuario) {
-          setUsuarioSeleccionado(otroUsuario)
-          await cargarMensajes(user.id, otroUsuario.id_usuario)
-          setConversaciones(prev => {
-            const yaExiste = prev.find(c => c.usuario.id_usuario === otroUsuario.id_usuario)
-            if (yaExiste) return prev
-            return [{ usuario: otroUsuario, ultimoMensaje: { contenido: idioma === 'es' ? 'Nueva conversación' : 'New conversation' } }, ...prev]
-          })
-        }
-      }
-      setLoading(false)
-    }
-    cargarDatos()
-  }, [])
-
-  useEffect(() => { mensajesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [mensajes])
-
   async function cargarConversaciones(userId) {
     const { data } = await supabase.from('mensaje').select('*, remitente:id_remitente(id_usuario, nombre, apellido), receptor:id_receptor(id_usuario, nombre, apellido)').or(`id_remitente.eq.${userId},id_receptor.eq.${userId}`).order('created_at', { ascending: false })
     if (!data) return []
@@ -82,11 +56,37 @@ function MensajesContenido() {
     setEnviando(false)
   }
 
+  useEffect(() => {
+    async function cargarDatos() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/auth/login'); return }
+      setUsuario(user)
+      await cargarConversaciones(user.id)
+      const usuarioParam = searchParams.get('usuario')
+      if (usuarioParam) {
+        const { data: otroUsuario } = await supabase.from('usuario').select('id_usuario, nombre, apellido').eq('id_usuario', usuarioParam).single()
+        if (otroUsuario) {
+          setUsuarioSeleccionado(otroUsuario)
+          await cargarMensajes(user.id, otroUsuario.id_usuario)
+          setConversaciones(prev => {
+            const yaExiste = prev.find(c => c.usuario.id_usuario === otroUsuario.id_usuario)
+            if (yaExiste) return prev
+            return [{ usuario: otroUsuario, ultimoMensaje: { contenido: idioma === 'es' ? 'Nueva conversación' : 'New conversation' } }, ...prev]
+          })
+        }
+      }
+      setLoading(false)
+    }
+    cargarDatos()
+  }, [router, searchParams, idioma])
+
+  useEffect(() => { mensajesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [mensajes])
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: 'var(--azul)' }}><MessageCircle size={28} /> {t('messages', 'title')}</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px]">
-        <div className="border rounded-2xl overflow-hidden flex flex-col shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-auto md:h-[600px]">
+        <div className="border rounded-2xl overflow-hidden flex flex-col shadow-sm h-72 md:h-auto" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
           <div className="p-4 border-b" style={{ borderColor: 'var(--borde)', backgroundColor: tema === 'oscuro' ? '#252840' : '#fafbff' }}>
             <h2 className="font-bold text-sm" style={{ color: 'var(--azul)' }}>{t('messages', 'conversations')}</h2>
           </div>
@@ -109,7 +109,7 @@ function MensajesContenido() {
               )}
           </div>
         </div>
-        <div className="md:col-span-2 border rounded-2xl overflow-hidden flex flex-col shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+        <div className="md:col-span-2 border rounded-2xl overflow-hidden flex flex-col shadow-sm min-h-[500px] md:min-h-0" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
           {!usuarioSeleccionado ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center"><MessageCircle size={48} className="mx-auto mb-3" style={{ color: 'var(--borde)' }} /><p className="font-medium" style={{ color: 'var(--texto-suave)' }}>{t('messages', 'selectConversation')}</p><p className="text-sm mt-1" style={{ color: 'var(--texto-suave)' }}>{t('messages', 'toStartChat')}</p></div>

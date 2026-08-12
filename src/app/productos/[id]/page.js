@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ShoppingCart, MessageCircle, RefreshCw, Package, CheckCircle, Sun, Moon, Globe } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, MessageCircle, RefreshCw, Package, CheckCircle, Sun, Moon, Globe, Award } from 'lucide-react'
 import { useApp } from '@/lib/context'
 
 export default function DetalleProducto() {
@@ -16,6 +16,9 @@ export default function DetalleProducto() {
   const [loading, setLoading] = useState(true)
   const [agregando, setAgregando] = useState(false)
   const [mensaje, setMensaje] = useState('')
+  const [imagenes, setImagenes] = useState([])
+  const [imagenActiva, setImagenActiva] = useState(0)
+  const [reputacionVendedor, setReputacionVendedor] = useState(null)
 
   useEffect(() => {
     async function cargarDatos() {
@@ -23,6 +26,13 @@ export default function DetalleProducto() {
       setUsuario(user)
       const { data } = await supabase.from('producto').select('*, categoria(nombre), usuario(nombre, apellido)').eq('id_producto', id).single()
       setProducto(data)
+      if (data) {
+        const { data: imagenesData } = await supabase.from('producto_imagen').select('url, orden').eq('id_producto', id).order('orden')
+        setImagenes(imagenesData?.map(imagen => imagen.url) || (data.imagen ? [data.imagen] : []))
+        await supabase.rpc('registrar_visita_producto', { p_id_producto: id })
+        const { data: reputacionData } = await supabase.rpc('obtener_reputacion_usuario', { p_id_usuario: data.id_usuario })
+        setReputacionVendedor(reputacionData?.[0] || null)
+      }
       setLoading(false)
     }
     cargarDatos()
@@ -35,7 +45,13 @@ export default function DetalleProducto() {
       let { data: carrito } = await supabase.from('carrito').select('*').eq('id_usuario', usuario.id).single()
       if (!carrito) { const { data: nuevo } = await supabase.from('carrito').insert({ id_usuario: usuario.id }).select().single(); carrito = nuevo }
       const { data: itemExistente } = await supabase.from('carrito_item').select('*').eq('id_carrito', carrito.id_carrito).eq('id_producto', id).single()
-      if (itemExistente) { await supabase.from('carrito_item').update({ cantidad: itemExistente.cantidad + 1 }).eq('id_item', itemExistente.id_item) }
+      if (itemExistente) {
+        if (itemExistente.cantidad >= producto.stock) {
+          setMensaje(idioma === 'es' ? 'No hay más unidades disponibles.' : 'No more units are available.')
+          return
+        }
+        await supabase.from('carrito_item').update({ cantidad: itemExistente.cantidad + 1 }).eq('id_item', itemExistente.id_item)
+      }
       else { await supabase.from('carrito_item').insert({ id_carrito: carrito.id_carrito, id_producto: id, cantidad: 1 }) }
       setMensaje(t('product', 'addedToCart'))
       setTimeout(() => setMensaje(''), 3000)
@@ -61,13 +77,15 @@ export default function DetalleProducto() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         <div className="rounded-3xl shadow-xl overflow-hidden border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
           <div className="grid grid-cols-1 md:grid-cols-2">
-            <div className="h-80 md:h-full flex items-center justify-center" style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#f8faff', minHeight: '320px' }}>
-              {producto.imagen ? <img src={producto.imagen} alt={producto.nombre} className="w-full h-full object-cover" /> : <div className="text-center"><Package size={80} style={{ color: 'var(--borde)' }} /><p className="text-sm mt-2" style={{ color: 'var(--texto-suave)' }}>{idioma === 'es' ? 'Sin imagen' : 'No image'}</p></div>}
-            </div>
+              <div className="h-80 md:h-full flex flex-col justify-center" style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#f8faff', minHeight: '320px' }}>
+                {imagenes[imagenActiva] ? <img src={imagenes[imagenActiva]} alt={producto.nombre} className="w-full h-full object-cover flex-1 min-h-0" /> : <div className="text-center"><Package size={80} style={{ color: 'var(--borde)' }} /><p className="text-sm mt-2" style={{ color: 'var(--texto-suave)' }}>{idioma === 'es' ? 'Sin imagen' : 'No image'}</p></div>}
+                {imagenes.length > 1 && <div className="flex justify-center gap-2 p-3">{imagenes.map((imagen, index) => <button key={imagen} onClick={() => setImagenActiva(index)} className="w-2.5 h-2.5 rounded-full" aria-label={`Ver imagen ${index + 1}`} style={{ backgroundColor: imagenActiva === index ? 'var(--azul)' : 'var(--borde)' }} />)}</div>}
+              </div>
             <div className="p-8 flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: 'var(--azul-claro)', color: 'var(--azul-medio)' }}>{producto.categoria?.nombre}</span>
+                  <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#eef2ff', color: 'var(--azul)' }}>{producto.condicion === 'nuevo' ? t('product', 'new') : t('product', 'used')}</span>
                   {producto.stock > 0 ? <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#f0fdf4', color: '#166534' }}>{t('product', 'inStock')}</span> : <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: '#fef2f2', color: '#dc2626' }}>{t('product', 'soldOut')}</span>}
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold mb-3" style={{ color: 'var(--texto-principal)' }}>{producto.nombre}</h1>
@@ -75,8 +93,9 @@ export default function DetalleProducto() {
                 <div className="mt-6 p-4 rounded-2xl" style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#f0f4ff' }}>
                   <p className="text-4xl font-extrabold" style={{ color: 'var(--azul)' }}>₡{Number(producto.precio).toLocaleString()}</p>
                   <p className="text-sm mt-1" style={{ color: 'var(--texto-suave)' }}>{producto.stock} {t('product', 'available')}</p>
-                  <p className="text-sm mt-1" style={{ color: 'var(--texto-suave)' }}>{t('product', 'soldBy')}: <span className="font-semibold" style={{ color: 'var(--azul)' }}>{producto.usuario?.nombre} {producto.usuario?.apellido}</span></p>
-                </div>
+                   <p className="text-sm mt-1" style={{ color: 'var(--texto-suave)' }}>{t('product', 'soldBy')}: <span className="font-semibold" style={{ color: 'var(--azul)' }}>{producto.usuario?.nombre} {producto.usuario?.apellido}</span></p>
+                   {reputacionVendedor && (reputacionVendedor.ventas_completadas > 0 || reputacionVendedor.trueques_aceptados > 0) && <div className="flex flex-wrap gap-1.5 mt-2"><span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: '#fef3c7', color: '#92400e' }}><Award size={12} /> {reputacionVendedor.ventas_completadas > 0 ? (idioma === 'es' ? 'Vendedor activo' : 'Active seller') : (idioma === 'es' ? 'Truequeador' : 'Trader')}</span></div>}
+                 </div>
               </div>
               <div className="mt-6 space-y-3">
                 {mensaje && <div className="flex items-center gap-2 p-3 rounded-xl text-sm" style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #86efac' }}><CheckCircle size={16} /> {mensaje}</div>}

@@ -17,18 +17,6 @@ export default function Admin() {
   const [productos, setProductos] = useState([])
   const [pedidos, setPedidos] = useState([])
 
-  useEffect(() => {
-    async function verificarAdmin() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-      const { data } = await supabase.from('usuario').select('rol').eq('id_usuario', user.id).single()
-      if (!data || data.rol !== 'administrador') { router.push('/'); return }
-      await cargarTodo()
-      setLoading(false)
-    }
-    verificarAdmin()
-  }, [])
-
   async function cargarTodo() {
     const [
       { count: totalUsuarios }, { count: totalProductos }, { count: totalPedidos },
@@ -75,6 +63,18 @@ export default function Admin() {
     }
   }
 
+  useEffect(() => {
+    async function verificarAdmin() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/auth/login'); return }
+      const { data } = await supabase.from('usuario').select('rol').eq('id_usuario', user.id).single()
+      if (!data || data.rol !== 'administrador') { router.push('/'); return }
+      await cargarTodo()
+      setLoading(false)
+    }
+    verificarAdmin()
+  }, [router])
+
   if (loading) return (
     <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-principal)' }}>
       <p style={{ color: 'var(--texto-suave)' }}>{t('admin', 'verifying')}</p>
@@ -87,6 +87,27 @@ export default function Admin() {
     { id: 'productos', label: t('admin', 'products'), icon: <Package size={15} /> },
     { id: 'pedidos', label: t('admin', 'orders'), icon: <ShoppingCart size={15} /> },
   ]
+  const categoriasActivas = Object.values(productos.reduce((acumulado, producto) => {
+    const nombre = producto.categoria?.nombre || (idioma === 'es' ? 'Sin categoría' : 'Uncategorized')
+    acumulado[nombre] = { nombre, cantidad: (acumulado[nombre]?.cantidad || 0) + 1 }
+    return acumulado
+  }, {})).sort((a, b) => b.cantidad - a.cantidad).slice(0, 5)
+  const productosPopulares = [...productos].sort((a, b) => Number(b.visitas || 0) - Number(a.visitas || 0)).slice(0, 5)
+  const actividadSemanal = Array.from({ length: 4 }, (_, indice) => {
+    const inicio = new Date()
+    inicio.setHours(0, 0, 0, 0)
+    inicio.setDate(inicio.getDate() - ((3 - indice) * 7 + 6))
+    const fin = new Date(inicio)
+    fin.setDate(fin.getDate() + 7)
+    return {
+      etiqueta: inicio.toLocaleDateString(idioma === 'es' ? 'es-CR' : 'en-US', { day: 'numeric', month: 'short' }),
+      cantidad: usuarios.filter(usuario => {
+        const fecha = new Date(usuario.created_at)
+        return fecha >= inicio && fecha < fin
+      }).length,
+    }
+  })
+  const maximoMetrica = Math.max(1, ...categoriasActivas.map(item => item.cantidad), ...productosPopulares.map(item => Number(item.visitas || 0)), ...actividadSemanal.map(item => item.cantidad))
 
   return (
     <main style={{ backgroundColor: 'var(--bg-principal)', minHeight: '100vh' }}>
@@ -153,6 +174,20 @@ export default function Admin() {
                   <p className="text-sm mt-1" style={{ color: 'var(--texto-suave)' }}>{stat.label}</p>
                 </div>
               ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <div className="border rounded-2xl p-5 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+                <h3 className="font-bold text-sm mb-4" style={{ color: 'var(--azul)' }}>{idioma === 'es' ? 'Categorías más activas' : 'Most active categories'}</h3>
+                <div className="space-y-3">{categoriasActivas.length ? categoriasActivas.map(item => <div key={item.nombre}><div className="flex justify-between text-xs mb-1" style={{ color: 'var(--texto-suave)' }}><span>{item.nombre}</span><strong>{item.cantidad}</strong></div><div className="h-2 rounded-full" style={{ backgroundColor: 'var(--borde)' }}><div className="h-2 rounded-full" style={{ width: `${(item.cantidad / maximoMetrica) * 100}%`, backgroundColor: 'var(--azul-medio)' }} /></div></div>) : <p className="text-sm" style={{ color: 'var(--texto-suave)' }}>{idioma === 'es' ? 'Aún no hay datos.' : 'No data yet.'}</p>}</div>
+              </div>
+              <div className="border rounded-2xl p-5 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+                <h3 className="font-bold text-sm mb-4" style={{ color: 'var(--azul)' }}>{idioma === 'es' ? 'Productos más vistos' : 'Most viewed products'}</h3>
+                <div className="space-y-3">{productosPopulares.length ? productosPopulares.map(item => <div key={item.id_producto}><div className="flex justify-between text-xs mb-1 gap-3" style={{ color: 'var(--texto-suave)' }}><span className="truncate">{item.nombre}</span><strong>{item.visitas || 0}</strong></div><div className="h-2 rounded-full" style={{ backgroundColor: 'var(--borde)' }}><div className="h-2 rounded-full" style={{ width: `${(Number(item.visitas || 0) / maximoMetrica) * 100}%`, backgroundColor: '#d97706' }} /></div></div>) : <p className="text-sm" style={{ color: 'var(--texto-suave)' }}>{idioma === 'es' ? 'Aún no hay datos.' : 'No data yet.'}</p>}</div>
+              </div>
+              <div className="border rounded-2xl p-5 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+                <h3 className="font-bold text-sm mb-4" style={{ color: 'var(--azul)' }}>{idioma === 'es' ? 'Usuarios registrados por semana' : 'Users registered per week'}</h3>
+                <div className="flex items-end h-32 gap-3">{actividadSemanal.map(item => <div key={item.etiqueta} className="flex-1 h-full flex flex-col justify-end items-center gap-2"><span className="text-xs font-bold" style={{ color: 'var(--azul)' }}>{item.cantidad}</span><div className="w-full rounded-t-lg min-h-1" style={{ height: `${Math.max(4, (item.cantidad / maximoMetrica) * 100)}%`, backgroundColor: '#16a34a' }} /><span className="text-[10px] text-center" style={{ color: 'var(--texto-suave)' }}>{item.etiqueta}</span></div>)}</div>
+              </div>
             </div>
           </div>
         )}
@@ -233,7 +268,7 @@ export default function Admin() {
                   <thead style={{ backgroundColor: tema === 'oscuro' ? '#252840' : '#fafbff' }}>
                     <tr className="text-sm border-b" style={{ borderColor: 'var(--borde)', color: 'var(--texto-suave)' }}>
                       {[
-                        t('admin', 'name'), t('admin', 'role'), t('admin', 'seller'),
+                        t('admin', 'name'), t('admin', 'role'), t('product', 'condition'), t('admin', 'seller'),
                         t('product', 'price'), t('product', 'stock'), t('admin', 'status'), t('admin', 'action')
                       ].map(h => (
                         <th key={h} className="text-left p-4 font-bold">{h}</th>
@@ -246,6 +281,7 @@ export default function Admin() {
                         style={{ borderColor: 'var(--borde)' }}>
                         <td className="p-4 font-bold text-sm" style={{ color: 'var(--azul)' }}>{p.nombre}</td>
                         <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>{p.categoria?.nombre}</td>
+                        <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>{p.condicion === 'nuevo' ? t('product', 'new') : t('product', 'used')}</td>
                         <td className="p-4 text-sm" style={{ color: 'var(--texto-suave)' }}>
                           {p.usuario?.nombre} {p.usuario?.apellido}
                         </td>

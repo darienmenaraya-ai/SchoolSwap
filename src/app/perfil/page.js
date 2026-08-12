@@ -4,20 +4,27 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, User, Package, Trash2, Plus, CheckCircle, Sun, Moon, Globe } from 'lucide-react'
-import { validateName, sanitizeText } from '@/lib/security'
+import { ArrowLeft, User, Package, Trash2, Plus, CheckCircle, Sun, Moon, Globe, Eye, EyeOff, Lock, Award } from 'lucide-react'
+import { validateName, validatePassword, sanitizeText } from '@/lib/security'
 import { useApp } from '@/lib/context'
 
 export default function Perfil() {
   const router = useRouter()
-  const { t, cambiarIdioma, cambiarTema, idioma, tema } = useApp()
+  const { t, cambiarIdioma, cambiarTema, idioma, tema, mostrarToast } = useApp()
   const [perfil, setPerfil] = useState(null)
   const [productos, setProductos] = useState([])
+  const [reputacion, setReputacion] = useState(null)
   const [loading, setLoading] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [form, setForm] = useState({ nombre: '', apellido: '', correo: '' })
+  const [passwordForm, setPasswordForm] = useState({ nueva: '', confirmar: '' })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordMessage, setPasswordMessage] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
     async function cargarPerfil() {
@@ -27,6 +34,8 @@ export default function Perfil() {
       if (data) { setPerfil(data); setForm({ nombre: data.nombre, apellido: data.apellido, correo: data.correo }) }
       const { data: misProd } = await supabase.from('producto').select('*, categoria(nombre)').eq('id_usuario', user.id).order('created_at', { ascending: false })
       setProductos(misProd || [])
+      const { data: reputacionData } = await supabase.rpc('obtener_reputacion_usuario', { p_id_usuario: user.id })
+      setReputacion(reputacionData?.[0] || null)
       setLoading(false)
     }
     cargarPerfil()
@@ -47,7 +56,9 @@ export default function Perfil() {
     if (!validate()) return
     setGuardando(true)
     const { error } = await supabase.from('usuario').update({ nombre: sanitizeText(form.nombre), apellido: sanitizeText(form.apellido) }).eq('id_usuario', perfil.id_usuario)
-    setMensaje(error ? (idioma === 'es' ? 'Error al guardar' : 'Error saving') : t('profile', 'saved'))
+    const texto = error ? (idioma === 'es' ? 'Error al guardar' : 'Error saving') : t('profile', 'saved')
+    setMensaje(texto)
+    mostrarToast(texto, error ? 'error' : 'success')
     setTimeout(() => setMensaje(''), 3000)
     setGuardando(false)
   }
@@ -56,6 +67,31 @@ export default function Perfil() {
     if (!confirm(idioma === 'es' ? '¿Estás seguro que querés eliminar este producto?' : 'Are you sure you want to delete this product?')) return
     await supabase.from('producto').delete().eq('id_producto', id_producto)
     setProductos(productos.filter(p => p.id_producto !== id_producto))
+  }
+
+  async function handleCambiarContrasena(e) {
+    e.preventDefault()
+    const passwordErrors = validatePassword(passwordForm.nueva)
+    if (passwordErrors.length > 0) {
+      setPasswordError(idioma === 'es' ? `Contraseña inválida: ${passwordErrors.join(', ')}.` : `Invalid password: ${passwordErrors.join(', ')}.`)
+      return
+    }
+    if (passwordForm.nueva !== passwordForm.confirmar) {
+      setPasswordError(idioma === 'es' ? 'Las contraseñas no coinciden.' : 'Passwords do not match.')
+      return
+    }
+    setChangingPassword(true)
+    setPasswordError('')
+    setPasswordMessage('')
+    const { error } = await supabase.auth.updateUser({ password: passwordForm.nueva })
+    if (error) {
+      setPasswordError(idioma === 'es' ? 'No se pudo cambiar la contraseña. Intentá de nuevo.' : 'Unable to change the password. Try again.')
+    } else {
+      setPasswordForm({ nueva: '', confirmar: '' })
+      setPasswordMessage(idioma === 'es' ? 'Contraseña actualizada correctamente.' : 'Password updated successfully.')
+      mostrarToast(idioma === 'es' ? 'Contraseña actualizada correctamente.' : 'Password updated successfully.')
+    }
+    setChangingPassword(false)
   }
 
   if (loading) return <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-principal)' }}><p style={{ color: 'var(--texto-suave)' }}>{t('common', 'loading')}</p></main>
@@ -74,6 +110,15 @@ export default function Perfil() {
       </nav>
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: 'var(--azul)' }}><User size={28} /> {t('profile', 'title')}</h1>
+        {reputacion && <div className="border rounded-3xl p-5 mb-6 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+          <div className="flex items-center gap-2 mb-3"><Award size={20} style={{ color: '#d97706' }} /><h2 className="text-lg font-bold" style={{ color: 'var(--azul)' }}>{idioma === 'es' ? 'Mi reputación' : 'My reputation'}</h2></div>
+          <div className="flex flex-wrap gap-2">
+            {reputacion.productos_publicados > 0 && <span className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ backgroundColor: 'var(--azul-claro)', color: 'var(--azul)' }}>{idioma === 'es' ? 'Vendedor activo' : 'Active seller'} · {reputacion.productos_publicados}</span>}
+            {reputacion.ventas_completadas > 0 && <span className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#f0fdf4', color: '#166534' }}>{idioma === 'es' ? 'Compras completadas' : 'Completed sales'} · {reputacion.ventas_completadas}</span>}
+            {reputacion.trueques_aceptados > 0 && <span className="px-3 py-1.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#f5f3ff', color: '#6d28d9' }}>{idioma === 'es' ? 'Truequeador' : 'Trader'} · {reputacion.trueques_aceptados}</span>}
+            {reputacion.productos_publicados === 0 && reputacion.ventas_completadas === 0 && reputacion.trueques_aceptados === 0 && <span className="text-sm" style={{ color: 'var(--texto-suave)' }}>{idioma === 'es' ? 'Publicá o intercambiá productos para obtener insignias.' : 'Publish or trade products to earn badges.'}</span>}
+          </div>
+        </div>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border rounded-3xl p-6 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
             <h2 className="text-lg font-bold mb-5" style={{ color: 'var(--azul)' }}>{t('profile', 'personalData')}</h2>
@@ -126,6 +171,25 @@ export default function Perfil() {
                 ))}
               </div>
             )}
+          </div>
+          <div className="border rounded-3xl p-6 shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--borde)' }}>
+            <h2 className="text-lg font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--azul)' }}><Lock size={19} /> {idioma === 'es' ? 'Cambiar contraseña' : 'Change password'}</h2>
+            <p className="text-sm mb-5" style={{ color: 'var(--texto-suave)' }}>{idioma === 'es' ? 'Usá una contraseña segura que no compartás con nadie.' : 'Use a secure password that you do not share with anyone.'}</p>
+            {passwordError && <div className="p-3 rounded-xl mb-4 text-sm" style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>{passwordError}</div>}
+            {passwordMessage && <div className="flex items-center gap-2 p-3 rounded-xl mb-4 text-sm" style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #86efac' }}><CheckCircle size={16} /> {passwordMessage}</div>}
+            <form onSubmit={handleCambiarContrasena} className="space-y-4" noValidate>
+              {[{ key: 'nueva', label: idioma === 'es' ? 'Nueva contraseña' : 'New password', visible: showNewPassword, setVisible: setShowNewPassword }, { key: 'confirmar', label: idioma === 'es' ? 'Confirmar contraseña' : 'Confirm password', visible: showConfirmPassword, setVisible: setShowConfirmPassword }].map((field) => (
+                <div key={field.key}>
+                  <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--texto-principal)' }}>{field.label}</label>
+                  <div className="relative">
+                    <input type={field.visible ? 'text' : 'password'} value={passwordForm[field.key]} onChange={(e) => { setPasswordForm({ ...passwordForm, [field.key]: e.target.value }); setPasswordError(''); setPasswordMessage('') }} className="w-full rounded-xl p-3 pr-11 text-sm border-2 outline-none" style={{ borderColor: 'var(--borde-input)', color: 'var(--texto-principal)', backgroundColor: 'var(--bg-input)' }} placeholder="••••••••" maxLength={128} autoComplete="new-password" />
+                    <button type="button" onClick={() => field.setVisible(!field.visible)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--texto-suave)' }} aria-label={field.visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{field.visible ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs" style={{ color: 'var(--texto-suave)' }}>{idioma === 'es' ? 'Mínimo 8 caracteres, una mayúscula y un número.' : 'At least 8 characters, one uppercase letter and one number.'}</p>
+              <button type="submit" disabled={changingPassword} className="w-full py-3 rounded-xl font-bold text-sm transition-all" style={{ backgroundColor: changingPassword ? '#6b7280' : 'var(--azul)', color: 'white', cursor: changingPassword ? 'not-allowed' : 'pointer' }}>{changingPassword ? (idioma === 'es' ? 'Actualizando...' : 'Updating...') : (idioma === 'es' ? 'Actualizar contraseña' : 'Update password')}</button>
+            </form>
           </div>
         </div>
       </div>

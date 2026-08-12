@@ -18,6 +18,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
 
+  function validarCampo(nombre, valor) {
+    if (nombre === 'email') return !validateEmail(valor) ? (idioma === 'es' ? 'Correo inválido' : 'Invalid email') : ''
+    if (nombre === 'password') return !valor ? (idioma === 'es' ? 'La contraseña es requerida' : 'Password is required') : valor.length < 6 ? (idioma === 'es' ? 'Contraseña muy corta' : 'Password too short') : ''
+    return ''
+  }
+
   function validate() {
     const errors = {}
     if (!email) errors.email = idioma === 'es' ? 'El correo es requerido' : 'Email is required'
@@ -97,7 +103,7 @@ export default function Login() {
               <div className="relative">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--texto-suave)' }} />
                 <input type="email" value={email}
-                  onChange={(e) => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: '' })) }}
+                  onChange={(e) => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: validarCampo('email', e.target.value) })) }}
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border-2 outline-none"
                   style={estiloInput('email')}
                   placeholder="tucorreo@ejemplo.com" autoComplete="email" maxLength={254} />
@@ -110,7 +116,7 @@ export default function Login() {
               <div className="relative">
                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--texto-suave)' }} />
                 <input type={showPassword ? 'text' : 'password'} value={password}
-                  onChange={(e) => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: '' })) }}
+                  onChange={(e) => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: validarCampo('password', e.target.value) })) }}
                   className="w-full pl-10 pr-10 py-3 rounded-xl text-sm border-2 outline-none"
                   style={estiloInput('password')}
                   placeholder="••••••••" autoComplete="current-password" maxLength={128} />

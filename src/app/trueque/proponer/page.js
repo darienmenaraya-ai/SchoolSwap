@@ -6,11 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, RefreshCw, Package, Sun, Moon, Globe } from 'lucide-react'
 import { useApp } from '@/lib/context'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 function ProponerTruequeContenido() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { t, cambiarIdioma, cambiarTema, idioma, tema } = useApp()
+  const { t, cambiarIdioma, cambiarTema, idioma, tema, mostrarToast } = useApp()
   const [usuario, setUsuario] = useState(null)
   const [productoSolicitado, setProductoSolicitado] = useState(null)
   const [misProductos, setMisProductos] = useState([])
@@ -44,6 +45,7 @@ function ProponerTruequeContenido() {
     const vendedorId = searchParams.get('vendedor')
     const { error: dbError } = await supabase.from('trueque').insert({ id_producto_ofrecido: productoOfrecido, id_producto_solicitado: productoSolicitado.id_producto, id_usuario_oferta: usuario.id, id_usuario_receptor: vendedorId, estado: 'pendiente' })
     if (dbError) { setError(dbError.message); setEnviando(false); return }
+    mostrarToast(idioma === 'es' ? 'Propuesta de trueque enviada correctamente.' : 'Trade proposal sent successfully.')
     router.push('/trueque')
   }
 
@@ -98,7 +100,7 @@ function ProponerTruequeContenido() {
           {misProductos.length > 0 && (
             <button type="submit" disabled={enviando || !productoOfrecido} className="w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2" style={{ backgroundColor: productoOfrecido ? 'var(--azul)' : 'var(--borde)', color: productoOfrecido ? 'white' : 'var(--texto-suave)', cursor: productoOfrecido ? 'pointer' : 'not-allowed', boxShadow: productoOfrecido ? '0 4px 15px rgba(26,31,110,0.3)' : 'none' }}>
               <RefreshCw size={16} />
-              {enviando ? t('trades', 'sending') : t('trades', 'sendProposal')}
+              {enviando ? <LoadingSpinner label={t('trades', 'sending')} size={16} /> : t('trades', 'sendProposal')}
             </button>
           )}
         </form>

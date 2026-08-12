@@ -9,7 +9,7 @@ import { useApp } from '@/lib/context'
 
 export default function Trueque() {
   const router = useRouter()
-  const { t, cambiarIdioma, cambiarTema, idioma, tema } = useApp()
+  const { t, cambiarIdioma, cambiarTema, idioma, tema, mostrarToast } = useApp()
   const [usuario, setUsuario] = useState(null)
   const [propuestasRecibidas, setPropuestasRecibidas] = useState([])
   const [propuestasEnviadas, setPropuestasEnviadas] = useState([])
@@ -31,9 +31,14 @@ export default function Trueque() {
   }, [])
 
   async function responderTrueque(id_trueque, nuevoEstado) {
-    await supabase.from('trueque').update({ estado: nuevoEstado }).eq('id_trueque', id_trueque)
+    const { error } = await supabase.rpc('responder_trueque', { p_id_trueque: id_trueque, p_aceptar: nuevoEstado === 'aceptado' })
+    if (error) {
+      setMensaje(idioma === 'es' ? 'No se pudo responder el trueque porque uno de los productos ya no está disponible.' : 'Unable to respond because one of the products is no longer available.')
+      return
+    }
     setPropuestasRecibidas(propuestasRecibidas.map(tr => tr.id_trueque === id_trueque ? { ...tr, estado: nuevoEstado } : tr))
     setMensaje(nuevoEstado === 'aceptado' ? t('trades', 'tradeAccepted') : t('trades', 'tradeRejected'))
+    mostrarToast(nuevoEstado === 'aceptado' ? t('trades', 'tradeAccepted') : t('trades', 'tradeRejected'))
     setTimeout(() => setMensaje(''), 3000)
   }
 
@@ -44,6 +49,18 @@ export default function Trueque() {
       case 'rechazado': return { backgroundColor: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626', label: t('trades', 'rejected') }
       default: return { backgroundColor: '#f9fafb', borderColor: '#e5e7eb', color: '#6b7280', label: estado }
     }
+  }
+
+  function ProgresoTrueque({ estado }) {
+    const finalizado = estado === 'aceptado' || estado === 'rechazado'
+    return (
+      <div className="mt-4 pt-4 border-t flex items-center gap-2" style={{ borderColor: 'var(--borde)' }}>
+        <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: 'var(--azul)' }}>1</span>
+        <span className="h-1 flex-1 rounded-full" style={{ backgroundColor: finalizado ? 'var(--azul)' : 'var(--borde)' }} />
+        <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: finalizado ? (estado === 'aceptado' ? '#16a34a' : '#dc2626') : 'var(--borde)', color: finalizado ? 'white' : 'var(--texto-suave)' }}>2</span>
+        <span className="text-xs font-semibold ml-1" style={{ color: 'var(--texto-suave)' }}>{finalizado ? (estado === 'aceptado' ? t('trades', 'accepted') : t('trades', 'rejected')) : t('trades', 'pending')}</span>
+      </div>
+    )
   }
 
   function ProductoCard({ producto, label }) {
@@ -99,6 +116,7 @@ export default function Trueque() {
                           <div className="text-center"><RefreshCw size={28} className="mx-auto" style={{ color: 'var(--azul-medio)' }} /><p className="text-xs mt-1" style={{ color: 'var(--texto-suave)' }}>{t('trades', 'inExchangeFor')}</p></div>
                           <ProductoCard producto={tr.producto_solicitado} label={t('trades', 'yourProduct')} />
                         </div>
+                        <ProgresoTrueque estado={tr.estado} />
                         {tr.estado === 'pendiente' && (
                           <div className="flex gap-3 mt-4">
                             <button onClick={() => responderTrueque(tr.id_trueque, 'aceptado')} className="flex-1 py-2.5 rounded-xl font-bold text-sm" style={{ backgroundColor: 'var(--azul)', color: 'white', boxShadow: '0 4px 15px rgba(26,31,110,0.3)' }}>{t('trades', 'accept')}</button>
@@ -134,6 +152,7 @@ export default function Trueque() {
                           <div className="text-center"><RefreshCw size={28} className="mx-auto" style={{ color: 'var(--azul-medio)' }} /><p className="text-xs mt-1" style={{ color: 'var(--texto-suave)' }}>{t('trades', 'inExchangeFor')}</p></div>
                           <ProductoCard producto={tr.producto_solicitado} label={t('trades', 'youRequested')} />
                         </div>
+                        <ProgresoTrueque estado={tr.estado} />
                       </div>
                     )
                   })}
